@@ -110,12 +110,14 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 Intent intentSettings = new Intent(this, SettingsActivity.class);
                 startActivity(intentSettings);
                 break;
+            /*
             case R.id.nav_mode:
                 finish();
                 overridePendingTransition(0, 0);
                 Intent intentMode = new Intent(this, ModeActivity.class);
                 startActivity(intentMode);
                 break;
+                */
             case R.id.nav_disconnect:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle(MyAlertDialog.titleDisconnect);

@@ -168,12 +168,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intentSettings = new Intent(this, SettingsActivity.class);
                 startActivity(intentSettings);
                 break;
-            case R.id.nav_mode:
+           /* case R.id.nav_mode:
                 finish();
                 overridePendingTransition(0, 0);
                 Intent intentMode = new Intent(this, ModeActivity.class);
                 startActivity(intentMode);
-                break;
+                break;*/
             case R.id.nav_disconnect:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle(MyAlertDialog.titleDisconnect);

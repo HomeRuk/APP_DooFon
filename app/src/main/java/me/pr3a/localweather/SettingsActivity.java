@@ -122,12 +122,14 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                 overridePendingTransition(0, 0);
                 startActivity(getIntent());
                 break;
+            /*
             case R.id.nav_mode:
                 finish();
                 overridePendingTransition(0, 0);
                 Intent intentMode = new Intent(this, ModeActivity.class);
                 startActivity(intentMode);
                 break;
+                */
             case R.id.nav_disconnect:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle(MyAlertDialog.titleDisconnect);

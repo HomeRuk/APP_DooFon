@@ -115,11 +115,12 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
                 Intent intentSetting = new Intent(this, SettingsActivity.class);
                 startActivity(intentSetting);
                 break;
-            case R.id.nav_mode:
+           /*case R.id.nav_mode:
                 finish();
                 overridePendingTransition(0, 0);
                 startActivity(getIntent());
                 break;
+                */
             case R.id.nav_disconnect:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle(MyAlertDialog.titleDisconnect);
@@ -339,10 +340,10 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
 
                 if (mode.equals("1")) {
                     radio1.setChecked(true);
-                    System.out.println(mode + ".....");
+                    //System.out.println(mode + ".....");
                 } else if (mode.equals("2")) {
                     radio2.setChecked(true);
-                    System.out.println(mode + "######");
+                    //System.out.println(mode + "######");
                 }
             } catch (Exception e) {
                 dialog.showProblemDialog(ModeActivity.this, "Problem", "Not Connected Internet2");
