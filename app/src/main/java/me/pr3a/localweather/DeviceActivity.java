@@ -124,6 +124,8 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        //Clear FCMtoken in DB
+                        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi.getApikey(), "0");
                         //Clear SharedPreferences
                         SharedPreferences.Editor editor = mPreferences.edit();
                         editor.clear();
@@ -178,6 +180,8 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
+                //Clear FCMtoken in DB
+                MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi.getApikey(), "0");
                 //Clear SharedPreferences
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.clear();

@@ -35,8 +35,7 @@ public class MyCustomFirebaseInstanceIdService extends FirebaseInstanceIdService
 
     /*
         UrlApi urlApi2 = new UrlApi();
-        String token = FirebaseInstanceId.getInstance().getToken();
-        MyNetwork.updateToken(urlApi2.getApikey(), token);
+        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi.getApikey(), token);
      */
     // send new FCMtoken to your server.
     public static void sendTokenToServer(String apiKey, String token) {

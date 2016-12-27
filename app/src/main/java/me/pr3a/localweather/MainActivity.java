@@ -30,6 +30,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,8 +38,12 @@ import me.itangqi.waveloadingview.WaveLoadingView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
 import me.pr3a.localweather.Helper.UrlApi;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
@@ -69,11 +74,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Show DrawerLayout and drawerToggle
         this.initInstances();
 
-        //updateToken
-        String token = FirebaseInstanceId.getInstance().getToken();
-        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), token);
-        //this.updateToken(urlApi2.getApikey(), token);
-
         /**
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
@@ -86,6 +86,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         swipeRefreshLayout.setRefreshing(true);
                                         mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
                                         conLoadJSON(1);
+                                        //updateToken
+                                        String token = FirebaseInstanceId.getInstance().getToken();
+                                        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), token);
+                                        //this.updateToken(urlApi2.getApikey(), token);
                                     }
                                 }
         );
@@ -171,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intentMode);
                 break;
             case R.id.nav_disconnect:
-                MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), "0");
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle(MyAlertDialog.titleDisconnect);
                 dialog.setMessage(MyAlertDialog.messageDisconnect);
@@ -179,6 +182,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        //Clear FCMtoken in DB
+                        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), "0");
                         //Clear SharedPreferences
                         SharedPreferences.Editor editor = mPreferences.edit();
                         editor.clear();
@@ -226,7 +231,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Button Disconnect
     public void onClickDisconnect(View view) {
-        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), "0");
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(MyAlertDialog.titleDisconnect);
         dialog.setMessage(MyAlertDialog.messageDisconnect);
@@ -234,6 +238,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
+                //Clear FCMtoken in DB
+                MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), "0");
                 //Clear SharedPreferences
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.clear();
@@ -305,17 +311,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // stopping swipe refresh
         swipeRefreshLayout.setRefreshing(false);
     }
-
-  /*  // Update Token FCM
+/*
+   // Update Token FCM
     private void updateToken(String apiKey, String token) {
         try {
             RequestBody formBody = new FormBody.Builder()
                     .add("SerialNumber", apiKey + "")
                     .add("FCMtoken", token + "")
-                    .add("sid", sid)
+                    .add("sid", "Ruk")
                     .build();
             Request request = new Request.Builder()
-                    .url(urlApi2.getUrl())
+                    .url(url2)
                     .post(formBody)
                     .build();
             OkHttpClient okHttpClient = new OkHttpClient();

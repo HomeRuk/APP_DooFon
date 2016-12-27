@@ -278,6 +278,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        //Clear FCMtoken in DB
+                        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi1.getApikey(), "0");
                         //Clear SharedPreferences
                         SharedPreferences.Editor editor = mPreferences.edit();
                         editor.clear();
@@ -332,6 +334,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
+                //Clear FCMtoken in DB
+                MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi1.getApikey(), "0");
                 //Clear SharedPreferences
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.clear();
