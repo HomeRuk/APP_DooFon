@@ -1,6 +1,7 @@
 package me.pr3a.localweather;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -10,12 +11,6 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.json.JSONObject;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
@@ -28,9 +23,8 @@ public class LogoActivity extends AppCompatActivity {
 
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
-    private final static String FILENAME = "Serialnumber.txt";
     private final static String url = "http://128.199.210.91/device/";
-    private final static int READ_BLOCK_SIZE = 100;
+    private SharedPreferences mPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,13 +39,37 @@ public class LogoActivity extends AppCompatActivity {
 
         if (MyNetwork.isNetworkConnected(this)) {
             //Read SerialNumber and if has SerialNumber connect device
-            readData();
+            mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+            getPreference();
         } else {
             dialog.showProblemDialog(LogoActivity.this, "Problem", "Not Connected Network");
         }
     }
 
-    // Read SerialNumber
+
+    private void getPreference() {
+        try {
+            if(mPreferences.contains("Serial")) {
+                String serial = mPreferences.getString("Serial", "");
+                //Set url & LoadJSON
+                urlApi.setUri(url, serial);
+                new LoadJSON0().execute(urlApi.getUri());
+            }else {
+                intentDelay();
+            }
+        } catch (Exception e) {
+            //Clear SharedPreferences
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.remove("Serial");
+            editor.apply();
+
+            //Link to Page ConnectDevice
+            intentDelay();
+
+            e.printStackTrace();
+        }
+    }
+   /* // Read SerialNumber
     private void readData() {
         try {
             FileInputStream fIn = openFileInput(FILENAME);
@@ -87,7 +105,7 @@ public class LogoActivity extends AppCompatActivity {
             intentDelay();
         }
     }
-
+*/
     //Delay to page ConnectDevice
     private void intentDelay() {
         Handler handler = new Handler();
@@ -131,24 +149,18 @@ public class LogoActivity extends AppCompatActivity {
                 String Serial = String.format("%s", json.getString("SerialNumber"));
                 if (Serial != null) {
                     Intent intent = new Intent(LogoActivity.this, MainActivity.class);
-                    intent.putExtra("Data_SerialNumber", Serial);
+                    //intent.putExtra("Data_SerialNumber", Serial);
                     startActivity(intent);
                     finish();
                 } else {
                     dialog.showConnectDialog(LogoActivity.this, "Connect", "Connect UnSuccess");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                try {
-                    //Writer Data Serial
-                    FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.remove("Serial");
+                editor.apply();
+
                 dialog.showProblemDialog(LogoActivity.this, "Problem", "Program Stop");
             }
         }

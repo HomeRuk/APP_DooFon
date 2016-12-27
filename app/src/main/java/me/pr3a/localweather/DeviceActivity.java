@@ -3,6 +3,7 @@ package me.pr3a.localweather;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -21,12 +22,6 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-
 import me.pr3a.localweather.Helper.MyNetwork;
 import me.pr3a.localweather.Helper.UrlApi;
 import me.pr3a.localweather.Helper.MyAlertDialog;
@@ -39,10 +34,9 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
     private final static String url = "http://www.doofon.me/device/";
-    private static final String FILENAME = "Serialnumber.txt";
-    private final static int READ_BLOCK_SIZE = 100;
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private SharedPreferences mPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +47,6 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         //Show DrawerLayout and drawerToggle
         this.initInstances();
 
-        if (MyNetwork.isNetworkConnected(this)) {
-            this.readData();
-            //LoadJSON
-            new LoadJSON2().execute(urlApi.getUri());
-        } else {
-            dialog.showProblemDialog(DeviceActivity.this, "Problem", "Not Connected Network");
-        }
         /*SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy:MM:dd");
         dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT+7"));
         System.out.println(dateFormatGmt.format(new Date()) + "");*/
@@ -75,6 +62,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
+                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
                                         conLoadJSON();
                                     }
                                 }
@@ -136,17 +124,13 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        FileOutputStream fOut = null;
-                        try {
-                            fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                            OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                            writer.write("");
-                            writer.flush();
-                            writer.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        //Clear SharedPreferences
+                        SharedPreferences.Editor editor = mPreferences.edit();
+                        editor.clear();
+                        editor.apply();
+
                         Toast.makeText(DeviceActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                        //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -194,17 +178,13 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                FileOutputStream fOut = null;
-                try {
-                    fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.clear();
+                editor.apply();
+
                 Toast.makeText(DeviceActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -246,7 +226,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
             // showing refresh animation before making http call
             swipeRefreshLayout.setRefreshing(true);
             //readData Serialnumber
-            this.readData();
+            this.getPreference();
             //LoadJSON
             new LoadJSON2().execute(urlApi.getUri());
         } else {
@@ -257,35 +237,19 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     }
 
     // Read SerialNumber
-    private void readData() {
+    private void getPreference() {
         try {
-            FileInputStream fIn = openFileInput(FILENAME);
-            InputStreamReader reader = new InputStreamReader(fIn);
-
-            char[] buffer = new char[READ_BLOCK_SIZE];
-            String data = "";
-            int charReadCount;
-            while ((charReadCount = reader.read(buffer)) > 0) {
-                String readString = String.copyValueOf(buffer, 0, charReadCount);
-                data += readString;
-                buffer = new char[READ_BLOCK_SIZE];
-            }
-            reader.close();
-            if (!(data.equals(""))) {
+            if(mPreferences.contains("Serial")) {
+                String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi.setUri(url, data);
+                urlApi.setUri(url, serial);
             }
         } catch (Exception e) {
+            //Clear SharedPreferences
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.remove("Serial");
+            editor.apply();
             e.printStackTrace();
-            try {
-                FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                writer.write("");
-                writer.flush();
-                writer.close();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
         }
     }
 

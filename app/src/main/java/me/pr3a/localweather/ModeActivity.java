@@ -3,6 +3,7 @@ package me.pr3a.localweather;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -21,12 +22,6 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
 import me.pr3a.localweather.Helper.UrlApi;
@@ -40,13 +35,12 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String FILENAME = "Serialnumber.txt";
     private final static String url1 = "http://www.doofon.me/device/";
     private final static String url2 = "http://www.doofon.me/device/update/mode";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
-    private final static int READ_BLOCK_SIZE = 100;
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private SharedPreferences mPreferences;
     private int mode = 1;
     private String sid = "Ruk";
 
@@ -71,6 +65,7 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
+                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
                                         conLoadJSON();
                                     }
                                 }
@@ -133,17 +128,13 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        FileOutputStream fOut = null;
-                        try {
-                            fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                            OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                            writer.write("");
-                            writer.flush();
-                            writer.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        //Clear SharedPreferences
+                        SharedPreferences.Editor editor = mPreferences.edit();
+                        editor.clear();
+                        editor.apply();
+
                         Toast.makeText(ModeActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                        //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -191,17 +182,13 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                FileOutputStream fOut = null;
-                try {
-                    fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.clear();
+                editor.apply();
+
                 Toast.makeText(ModeActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -299,35 +286,18 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
     //Read SerialNumber
     private void readData() {
         try {
-            FileInputStream fIn = openFileInput(FILENAME);
-            InputStreamReader reader = new InputStreamReader(fIn);
-
-            char[] buffer = new char[READ_BLOCK_SIZE];
-            String data = "";
-            int charReadCount;
-            while ((charReadCount = reader.read(buffer)) > 0) {
-                String readString = String.copyValueOf(buffer, 0, charReadCount);
-                data += readString;
-                buffer = new char[READ_BLOCK_SIZE];
-            }
-            reader.close();
-            if (data.equals("")) dialog.showProblemDialog(this, "Problem", "Data Empty");
-            else {
+            if(mPreferences.contains("Serial")) {
+                String serial = mPreferences.getString("Serial", "");
                 //Set url
-                urlApi1.setUri(url1, data);
-                urlApi2.setUri(url2, data);
+                urlApi1.setUri(url1, serial);
+                urlApi2.setUri(url2, serial);
             }
         } catch (Exception e) {
+            //Clear SharedPreferences
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.remove("Serial");
+            editor.apply();
             e.printStackTrace();
-            try {
-                FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                writer.write("");
-                writer.flush();
-                writer.close();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
         }
     }
 

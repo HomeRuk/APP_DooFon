@@ -3,6 +3,7 @@ package me.pr3a.localweather;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -53,12 +54,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+
 
 public class LocationActivity extends AppCompatActivity implements OnLocationUpdatedListener, OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
 
@@ -68,15 +65,13 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     private double longitude = 0;
     private String Serial = "Device ";
     private String sid = "Ruk";
-    private final static String FILENAME = "Serialnumber.txt";
-    private final static String FILENAME2 = "location.txt";
     private final static String url1 = "http://www.doofon.me/device/";
     private final static String url2 = "http://www.doofon.me/device/update/location";
     private final static int LOCATION_PERMISSION_ID = 1001;
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
-    private final static int READ_BLOCK_SIZE = 100;
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private SharedPreferences mPreferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,6 +81,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         this.showToolbar("Setting", "Device Location");
         //Show DrawerLayout and drawerToggle
         this.initInstances();
+        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
 
         if (MyNetwork.isNetworkConnected(this)) {
             //Read SerialNumber
@@ -94,26 +90,17 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             new LoadJSON1().execute(urlApi1.getUri());
             //read location
             try {
-                FileInputStream fIn = openFileInput(FILENAME2);
-                InputStreamReader reader = new InputStreamReader(fIn);
-                char[] buffer = new char[READ_BLOCK_SIZE];
-                String data = "";
-                int charReadCount;
-                while ((charReadCount = reader.read(buffer)) > 0) {
-                    String readString = String.copyValueOf(buffer, 0, charReadCount);
-                    data += readString;
-                    buffer = new char[READ_BLOCK_SIZE];
+                if(mPreferences.contains("Location")) {
+                    String location = mPreferences.getString("Location", "");
+                    JSONObject json = new JSONObject(location);
+                    Serial += String.format("%s", json.getString("SerialNumber"));
+                    String latitude2 = String.format("%s", json.getString("latitude"));
+                    String longitude2 = String.format("%s", json.getString("longitude"));
+
+                    // Convect to double
+                    latitude = Double.parseDouble(latitude2);
+                    longitude = Double.parseDouble(longitude2);
                 }
-                reader.close();
-
-                JSONObject json = new JSONObject(data);
-                Serial += String.format("%s", json.getString("SerialNumber"));
-                String latitude2 = String.format("%s", json.getString("latitude"));
-                String longitude2 = String.format("%s", json.getString("longitude"));
-
-                // Convect to double
-                latitude = Double.parseDouble(latitude2);
-                longitude = Double.parseDouble(longitude2);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -145,11 +132,12 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 .stop();
     }
 
-    //Request Permission Location
+    //After Request Permission Location
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.i("APP", "onRequestPermissionsResult");
         if (requestCode == LOCATION_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // ReStart Activity
             finish();
             overridePendingTransition(0, 0);
             startActivity(getIntent());
@@ -222,7 +210,6 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         } else if (id == R.id.action_save) {
             //Check Connect network
             if (MyNetwork.isNetworkConnected(this)) {
-
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle("Save Location");
                 dialog.setMessage("Do you want to save location ?");
@@ -289,17 +276,13 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        FileOutputStream fOut = null;
-                        try {
-                            fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                            OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                            writer.write("");
-                            writer.flush();
-                            writer.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        //Clear SharedPreferences
+                        SharedPreferences.Editor editor = mPreferences.edit();
+                        editor.clear();
+                        editor.apply();
+
                         Toast.makeText(LocationActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                        //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -347,17 +330,13 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                FileOutputStream fOut = null;
-                try {
-                    fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.clear();
+                editor.apply();
+
                 Toast.makeText(LocationActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -477,34 +456,18 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     // Read SerialNumber
     private void readData() {
         try {
-            FileInputStream fIn = openFileInput(FILENAME);
-            InputStreamReader reader = new InputStreamReader(fIn);
-
-            char[] buffer = new char[READ_BLOCK_SIZE];
-            String data = "";
-            int charReadCount;
-            while ((charReadCount = reader.read(buffer)) > 0) {
-                String readString = String.copyValueOf(buffer, 0, charReadCount);
-                data += readString;
-                buffer = new char[READ_BLOCK_SIZE];
-            }
-            reader.close();
-            if (!(data.equals(""))) {
+            if(mPreferences.contains("Serial")) {
+                String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi1.setUri(url1, data);
-                urlApi2.setUri(url2, data);
+                urlApi1.setUri(url1, serial);
+                urlApi2.setUri(url2, serial);
             }
         } catch (Exception e) {
+            //Clear SharedPreferences
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.remove("Serial");
+            editor.apply();
             e.printStackTrace();
-            try {
-                FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                writer.write("");
-                writer.flush();
-                writer.close();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
         }
     }
 
@@ -535,11 +498,10 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             super.onPostExecute(result);
             try {
                 //Writer location
-                FileOutputStream fOut = openFileOutput(FILENAME2, MODE_PRIVATE);
-                OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                writer.write(result);
-                writer.flush();
-                writer.close();
+                String location = result;
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.putString("Location", location);
+                editor.apply();
             } catch (Exception e) {
                 dialog.showConnectDialog(LocationActivity.this, "Connect", "Connect UnSuccess");
                 e.printStackTrace();

@@ -3,9 +3,9 @@ package me.pr3a.localweather;
 //import android.content.Context;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 //import android.net.ConnectivityManager;
 import android.os.AsyncTask;
@@ -19,7 +19,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,11 +30,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,28 +37,22 @@ import me.itangqi.waveloadingview.WaveLoadingView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
 import me.pr3a.localweather.Helper.UrlApi;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
 
     private Toolbar toolbar;
-    private NavigationView navigationView;
     private TextView weatherIcon;
     private SwipeRefreshLayout swipeRefreshLayout;
     private static final String url1 = "http://www.doofon.me/weather/";
     private static final String url2 = "http://www.doofon.me/device/update/FCMtoken";
-    private static final String FILENAME = "Serialnumber.txt";
-    private final static int READ_BLOCK_SIZE = 100;
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
-    private String sid = "Ruk";
+    private SharedPreferences mPreferences;
+    //private String sid = "Ruk";
 
     // Event onCreate
     @Override
@@ -80,8 +68,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.showToolbar("DooFon", "");
         //Show DrawerLayout and drawerToggle
         this.initInstances();
-        //Read Serialnumber & setUrl
-        this.readData();
 
         //updateToken
         String token = FirebaseInstanceId.getInstance().getToken();
@@ -98,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
+                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
                                         conLoadJSON(1);
                                     }
                                 }
@@ -192,17 +179,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        FileOutputStream fOut = null;
-                        try {
-                            fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                            OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                            writer.write("");
-                            writer.flush();
-                            writer.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        //Clear SharedPreferences
+                        SharedPreferences.Editor editor = mPreferences.edit();
+                        editor.clear();
+                        editor.apply();
+
                         Toast.makeText(MainActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                        //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -251,17 +234,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                FileOutputStream fOut = null;
-                try {
-                    fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.clear();
+                editor.apply();
+
                 Toast.makeText(MainActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -303,6 +282,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (MyNetwork.isNetworkConnected(this)) {
             // showing refresh animation before making http call
             swipeRefreshLayout.setRefreshing(true);
+            // ReadData Serialnumber
+            this.getPreference();
             // choice 1 setTime
             if (choice == 1) {
                 TimerTask taskNew = new TimerTask() {
@@ -325,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         swipeRefreshLayout.setRefreshing(false);
     }
 
-    // Update Token FCM
+  /*  // Update Token FCM
     private void updateToken(String apiKey, String token) {
         try {
             RequestBody formBody = new FormBody.Builder()
@@ -355,38 +336,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             e.printStackTrace();
         }
     }
-
+*/
     // Read SerialNumber
-    private void readData() {
+    private void getPreference() {
         try {
-            FileInputStream fIn = openFileInput(FILENAME);
-            InputStreamReader reader = new InputStreamReader(fIn);
-
-            char[] buffer = new char[READ_BLOCK_SIZE];
-            String data = "";
-            int charReadCount;
-            while ((charReadCount = reader.read(buffer)) > 0) {
-                String readString = String.copyValueOf(buffer, 0, charReadCount);
-                data += readString;
-                buffer = new char[READ_BLOCK_SIZE];
-            }
-            reader.close();
-            if (!(data.equals(""))) {
+            if(mPreferences.contains("Serial")) {
+                String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi1.setUri(url1, data);
-                urlApi2.setUri(url2, data);
+                urlApi1.setUri(url1, serial);
+                urlApi2.setUri(url2, serial);
             }
         } catch (Exception e) {
+            //Clear SharedPreferences
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.remove("Serial");
+            editor.apply();
             e.printStackTrace();
-            try {
-                FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                writer.write("");
-                writer.flush();
-                writer.close();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
         }
     }
 

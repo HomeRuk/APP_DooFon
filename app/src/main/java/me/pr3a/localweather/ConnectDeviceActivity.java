@@ -2,6 +2,7 @@ package me.pr3a.localweather;
 
 import android.content.Intent;
 //import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 //import android.support.v4.app.ActivityCompat;
 //import android.support.v4.content.ContextCompat;
@@ -13,10 +14,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import org.json.JSONObject;
-//import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 
 import me.pr3a.localweather.Helper.MyNetwork;
 import me.pr3a.localweather.Helper.UrlApi;
@@ -30,10 +27,9 @@ public class ConnectDeviceActivity extends AppCompatActivity {
     private UrlApi urlApi = new UrlApi();
     private MyAlertDialog dialog = new MyAlertDialog();
     private String serial;
-    private final static String FILENAME = "Serialnumber.txt";
     private final static String url = "http://www.doofon.me/device/";
-    private static final int ZXING_CAMERA_PERMISSION = 1;
-    EditText editSerial;
+    private SharedPreferences mPreferences;
+    private EditText editSerial;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +37,8 @@ public class ConnectDeviceActivity extends AppCompatActivity {
         setContentView(R.layout.activity_connect_device);
 
         bindWidgets();
+
+        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
 
         /*String Ccontent;
         Bundle bundle = getIntent().getExtras();
@@ -54,6 +52,14 @@ public class ConnectDeviceActivity extends AppCompatActivity {
         editSerial = (EditText) findViewById(R.id.serial);
     }
 
+    // Save Serial to SharedPreferences
+    private void putPreference() {
+        serial = editSerial.getText().toString();
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString("Serial", serial);
+        editor.apply();
+    }
+
     // Button Connect
     public void onButtonConnect(View view) {
         serial = editSerial.getText().toString();
@@ -63,6 +69,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
                 //Set url & LoadJSON
                 urlApi.setUri(url, serial);
                 new LoadJSON1().execute(urlApi.getUri());
+                this.putPreference();
             } else
                 dialog.showProblemDialog(ConnectDeviceActivity.this, "Problem", "Not Connected Network");
         } else
@@ -114,36 +121,19 @@ public class ConnectDeviceActivity extends AppCompatActivity {
                 JSONObject json = new JSONObject(result);
                 String Serial = String.format("%s", json.getString("SerialNumber"));
                 if (Serial != null) {
-                    try {
-                        //Writer Data Serial
-                        FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                        OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                        writer.write(Serial);
-                        writer.flush();
-                        writer.close();
-                    } catch (IOException ioe) {
-                        dialog.showConnectDialog(ConnectDeviceActivity.this, "Connect", "Writer Data fail");
-                        ioe.printStackTrace();
-                    }
-                    Toast.makeText(ConnectDeviceActivity.this, "Save successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                     overridePendingTransition(0, 0);
                     Intent intent = new Intent(ConnectDeviceActivity.this, MainActivity.class);
                     //intent.putExtra("Data_SerialNumber", Serial);
                     startActivity(intent);
                 }
+                Toast.makeText(ConnectDeviceActivity.this, "Connection successfully!", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                try {
-                    //Writer Data Serial
-                    FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (IOException ioe) {
-                    dialog.showConnectDialog(ConnectDeviceActivity.this, "Connect", "Writer Data fail");
-                    ioe.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.remove("Serial");
+                editor.apply();
+
                 dialog.showConnectDialog(ConnectDeviceActivity.this, "Connect", "Connect UnSuccess");
                 e.printStackTrace();
             }

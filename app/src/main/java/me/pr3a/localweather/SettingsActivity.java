@@ -3,6 +3,7 @@ package me.pr3a.localweather;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -16,17 +17,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONObject;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
 import at.grabner.circleprogress.CircleProgressView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
@@ -42,19 +36,17 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String FILENAME = "Serialnumber.txt";
     private final static String url1 = "http://www.doofon.me/device/";
     private final static String url2 = "http://www.doofon.me/device/update/threshold";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
-    private final static int READ_BLOCK_SIZE = 100;
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private SharedPreferences mPreferences;
     private TextView txtValue;
-    //private SeekBar seekBar;
     private CircleProgressView mCircleView;
-    //private int progressChanged = 0;
     private int valueInt = 0;
     private String sid = "Ruk";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +68,8 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
+                                        //Read Serialnumber & setUrl
+                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
                                         conLoadJSON();
                                     }
                                 }
@@ -142,17 +136,13 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        FileOutputStream fOut = null;
-                        try {
-                            fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                            OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                            writer.write("");
-                            writer.flush();
-                            writer.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        //Clear SharedPreferences
+                        SharedPreferences.Editor editor = mPreferences.edit();
+                        editor.clear();
+                        editor.apply();
+
                         Toast.makeText(SettingsActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                        //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -200,17 +190,13 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
         dialog.setCancelable(true);
         dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                FileOutputStream fOut = null;
-                try {
-                    fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.clear();
+                editor.apply();
+
                 Toast.makeText(SettingsActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+                //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -341,7 +327,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
             // showing refresh animation before making http call
             swipeRefreshLayout.setRefreshing(true);
             //readData Serialnumber
-            this.readData();
+            this.getPreference();
             new LoadJSON2().execute(urlApi1.getUri());
         } else {
             dialog.showProblemDialog(this, "Problem", "Not Connected Network");
@@ -351,37 +337,20 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     }
 
     //Read SerialNumber
-    private void readData() {
+    private void getPreference() {
         try {
-            FileInputStream fIn = openFileInput(FILENAME);
-            InputStreamReader reader = new InputStreamReader(fIn);
-
-            char[] buffer = new char[READ_BLOCK_SIZE];
-            String data = "";
-            int charReadCount;
-            while ((charReadCount = reader.read(buffer)) > 0) {
-                String readString = String.copyValueOf(buffer, 0, charReadCount);
-                data += readString;
-                buffer = new char[READ_BLOCK_SIZE];
-            }
-            reader.close();
-            if (data.equals("")) dialog.showProblemDialog(this, "Problem", "Data Empty");
-            else {
-                //Set url
-                urlApi1.setUri(url1, data);
-                urlApi2.setUri(url2, data);
+            if(mPreferences.contains("Serial")) {
+                String serial = mPreferences.getString("Serial", "");
+                //Set url & LoadJSON
+                urlApi1.setUri(url1, serial);
+                urlApi2.setUri(url2, serial);
             }
         } catch (Exception e) {
+            //Clear SharedPreferences
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.remove("Serial");
+            editor.apply();
             e.printStackTrace();
-            try {
-                FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                writer.write("");
-                writer.flush();
-                writer.close();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
         }
     }
 
