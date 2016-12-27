@@ -3,6 +3,7 @@ package me.pr3a.localweather;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,10 +20,6 @@ import com.google.zxing.Result;
 
 import org.json.JSONObject;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.UrlApi;
@@ -38,7 +35,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     private UrlApi urlApi = new UrlApi();
     private MyAlertDialog dialog = new MyAlertDialog();
     private final static String url = "http://www.doofon.me/device/";
-    private final static String FILENAME = "Serialnumber.txt";
+    private SharedPreferences mPreferences;
 
     @Override
     public void onCreate(Bundle state) {
@@ -49,6 +46,8 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
         ViewGroup contentFrame = (ViewGroup) findViewById(R.id.content_frame);
         mScannerView = new ZXingScannerView(this);
         contentFrame.addView(mScannerView);
+
+        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
     }
 
     // Activity onStart is Rule Start Service Location
@@ -74,6 +73,13 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     public void onPause() {
         super.onPause();
         mScannerView.stopCamera();
+    }
+
+    // Save Serial to SharedPreferences
+    private void putPreference(String serial) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString("Serial", serial);
+        editor.apply();
     }
 
     @Override
@@ -142,6 +148,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                     //Set url & LoadJSON
                     urlApi.setUri(url, serial);
                     new LoadJSONDevice().execute(urlApi.getUri());
+                    this.putPreference(serial);
                 } else
                     dialog.showProblemDialog(this, "Problem", "Not Connected Network");
             } else
@@ -179,36 +186,18 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                 JSONObject json = new JSONObject(result);
                 String Serial = String.format("%s", json.getString("SerialNumber"));
                 if (Serial != null) {
-                    try {
-                        //Writer Data Serial
-                        FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                        OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                        writer.write(Serial);
-                        writer.flush();
-                        writer.close();
-                    } catch (IOException ioe) {
-                        dialog.showConnectDialog(ScannerActivity.this, "Connect", "Writer Data fail");
-                        ioe.printStackTrace();
-                    }
-                    Toast.makeText(ScannerActivity.this, "Save successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                     overridePendingTransition(0, 0);
                     Intent intent = new Intent(ScannerActivity.this, MainActivity.class);
-                    //intent.putExtra("Data_SerialNumber", Serial);
                     startActivity(intent);
+                    Toast.makeText(ScannerActivity.this, "Connection successfully!", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
-                try {
-                    //Writer Data Serial
-                    FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                    OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                    writer.write("");
-                    writer.flush();
-                    writer.close();
-                } catch (IOException ioe) {
-                    dialog.showConnectDialog(ScannerActivity.this, "Connect", "Writer Data fail");
-                    ioe.printStackTrace();
-                }
+                //Clear SharedPreferences
+                SharedPreferences.Editor editor = mPreferences.edit();
+                editor.remove("Serial");
+                editor.apply();
+
                 dialog.showConnectDialog(ScannerActivity.this, "Connect", "Connect UnSuccess");
                 e.printStackTrace();
             }

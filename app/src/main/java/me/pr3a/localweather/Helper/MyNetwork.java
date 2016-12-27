@@ -20,9 +20,6 @@ import okhttp3.Response;
 
 public class MyNetwork {
 
-    private static final UrlApi urlApi2 = new UrlApi();
-    private static final String sid = "Ruk";
-    private static final String url2 = "http://www.doofon.me/device/update/FCMtoken";
     /**
      * Checks if the device is connected to the network.
      *

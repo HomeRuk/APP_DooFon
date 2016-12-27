@@ -85,7 +85,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
 
         if (MyNetwork.isNetworkConnected(this)) {
             //Read SerialNumber
-            this.readData();
+            this.getPreference();
             //Load SerialNumber
             new LoadJSON1().execute(urlApi1.getUri());
             //read location
@@ -100,12 +100,14 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                     // Convect to double
                     latitude = Double.parseDouble(latitude2);
                     longitude = Double.parseDouble(longitude2);
+                    Log.i("latitude", "=" + latitude);
+                    Log.i("longitude", "=" + longitude);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
             // SET MAP
-            this.setMap();
+            //this.setMap();
         } else dialog.showProblemDialog(this, "Problem", "Not Connected Network");
         //Log.i("APP", "onCreate");
     }
@@ -191,7 +193,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
             dialog.setTitle("Refresh Location");
             dialog.setMessage("Do you want to location refresh ?");
-            dialog.setIcon(R.drawable.ic_clear_black_24dp);
+            dialog.setIcon(R.drawable.ic_loop_black_24dp);
             dialog.setCancelable(true);
             dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
@@ -454,7 +456,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     }
 
     // Read SerialNumber
-    private void readData() {
+    private void getPreference() {
         try {
             if(mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
@@ -502,6 +504,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.putString("Location", location);
                 editor.apply();
+                setMap();
             } catch (Exception e) {
                 dialog.showConnectDialog(LocationActivity.this, "Connect", "Connect UnSuccess");
                 e.printStackTrace();

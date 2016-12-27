@@ -126,8 +126,9 @@ public class ConnectDeviceActivity extends AppCompatActivity {
                     Intent intent = new Intent(ConnectDeviceActivity.this, MainActivity.class);
                     //intent.putExtra("Data_SerialNumber", Serial);
                     startActivity(intent);
+                    Toast.makeText(ConnectDeviceActivity.this, "Connection successfully!", Toast.LENGTH_SHORT).show();
                 }
-                Toast.makeText(ConnectDeviceActivity.this, "Connection successfully!", Toast.LENGTH_SHORT).show();
+
             } catch (Exception e) {
                 //Clear SharedPreferences
                 SharedPreferences.Editor editor = mPreferences.edit();
