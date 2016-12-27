@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="actionbar_opacity">#33000000</color>
+    <color name="colorPrimary">#4FC3F7</color>
+    <!--<color name="colorPrimary">#ff3eaff9</color>-->
+    <color name="colorPrimaryDark">#03A9F4</color>
+    <color name="colorBodyWeather">#59cdff</color>
+
+    <color name="colorAccent">#8BC34A</color>
+
+    <color name="border_color">#99ffffff</color>
+
+    <color name="colorBackground">#AAffffff</color>
+    <color name="colorTextBase">#ffffff</color>
+    <color name="colorTextName">#808080</color>
+</resources>

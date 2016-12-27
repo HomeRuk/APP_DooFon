@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="90"
+    android:toDegrees="90">
+    <shape android:shape="line">
+
+        <!-- view background color -->
+        <solid android:color="#00000000"/>
+
+        <!-- view border color and width -->
+        <stroke
+            android:width="0.5dp"
+            android:color="@color/border_color"/>
+
+    </shape>
+</rotate>

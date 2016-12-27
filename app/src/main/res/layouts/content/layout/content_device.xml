@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/activity_horizontal_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".DeviceActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorBackground"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/txt_Serial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tx_serialnumber"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:id="@+id/txt_SerialNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_weather"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txt_Lat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tx_latitude"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:id="@+id/txt_Latitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_weather"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txt_Lon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tx_longitude"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:id="@+id/txt_Longitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_weather"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txt_TS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tx_threshold"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:id="@+id/txt_Threshold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_weather"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txt_Cr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tx_create_at"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:id="@+id/txt_Create"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_weather"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txt_UP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tx_updated_at"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:id="@+id/txt_Updated"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_weather"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

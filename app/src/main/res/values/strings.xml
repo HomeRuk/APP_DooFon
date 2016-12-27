@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">DooFon</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- Icon weather -->
+    <string name="weather_sunny">&#xf00d;</string>
+    <string name="weather_day_rain">&#xf008;</string>
+    <string name="weather_cold">&#xf076;</string>
+    <string name="weather_hot">&#xf0c7;</string>
+
+    <string name="weather_rain">&#xf019;</string>
+
+    <string name="weather_night_clear">&#xf02e;</string>
+    <string name="weather_night_rain">&#xf028;</string>
+
+    <!-- textview -->
+    <string name="Text_Daytime_Rain">Daytime Rain</string>
+    <string name="Text_Daytime_Neutral">Sunny</string>
+    <string name="Text_Nighttime_Rain">Nighttime Rain</string>
+    <string name="Text_Nighttime_Neutral">Night clear</string>
+    <string name="Text_hot">Hot</string>
+    <string name="Text_cold">Cold</string>
+
+    <!-- textview -->
+    <string name="login_title">DooFon</string>
+    <string name="SerialNumber_title">SerialNumber</string>
+    <string name="button_connect">Connect</string>
+    <string name="dis_connect">Disconnect</string>
+    <string name="deawer_Main">Main</string>
+    <string name="deawer_Device">My Device</string>
+    <string name="deawer_location">Device location</string>
+    <string name="deawer_Setting">Setting</string>
+    <string name="tx_serialnumber">SerialNumber</string>
+    <string name="item_refresh">Refresh</string>
+    <string name="saveThreshold">Save</string>
+
+    <!-- Button view -->
+    <string name="bt_save">Save</string>
+    <string name="Button_disconnect">Disconnect</string>
+    <string name="tx_address">Address</string>
+    <string name="tx_latitude">Latitude</string>
+    <string name="tx_longitude">Longitude</string>
+    <string name="tx_threshold">PredictThreshold</string>
+    <string name="tx_create_at">Create_at</string>
+    <string name="tx_updated_at">Updated_at</string>
+    <string name="deawer_main">Main</string>
+    <string name="header_my_device">My Device</string>
+    <string name="header_setting">Setting</string>
+    <string name="header_location">Device location</string>
+    <string name="header_main">Main</string>
+    <string name="drawer_predictthreshold">Predict Threshold</string>
+    <string name="button_Barcode">Read QR-Code</string>
+    <string name="text_setting">Setting Minimum Threshold Alert</string>
+    <string name="mode">Mode</string>
+</resources>
