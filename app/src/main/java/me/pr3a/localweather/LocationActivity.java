@@ -274,8 +274,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             */
             case R.id.nav_disconnect:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-                dialog.setTitle("Refresh Location");
-                dialog.setMessage("Do you want to location refresh ?");
+                dialog.setTitle(MyAlertDialog.titleDisconnect);
+                dialog.setMessage(MyAlertDialog.messageDisconnect);
                 dialog.setIcon(R.drawable.ic_clear_black_24dp);
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
