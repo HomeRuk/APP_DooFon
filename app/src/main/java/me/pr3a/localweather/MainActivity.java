@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Toolbar toolbar;
     private TextView weatherIcon;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private static final String url1 = "http://www.doofon.me/weather/";
-    private static final String url2 = "http://www.doofon.me/device/update/FCMtoken";
+    private static final String url1 = "http://192.168.44.51/DooFon/public/api/weather/";
+    private static final String url2 = "http://192.168.44.51/DooFon/public/api/device/update/FCMtoken";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
-                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+                                        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
                                         conLoadJSON(1);
                                         //updateToken
                                         String token = FirebaseInstanceId.getInstance().getToken();
@@ -311,42 +311,43 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // stopping swipe refresh
         swipeRefreshLayout.setRefreshing(false);
     }
-/*
-   // Update Token FCM
-    private void updateToken(String apiKey, String token) {
-        try {
-            RequestBody formBody = new FormBody.Builder()
-                    .add("SerialNumber", apiKey + "")
-                    .add("FCMtoken", token + "")
-                    .add("sid", "Ruk")
-                    .build();
-            Request request = new Request.Builder()
-                    .url(url2)
-                    .post(formBody)
-                    .build();
-            OkHttpClient okHttpClient = new OkHttpClient();
-            okHttpClient.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    if (!response.isSuccessful())
-                        throw new IOException("Unexpected code " + response);
-                }
-            });
-            //Toast.makeText(this, "UPDATE Token", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
+    /*
+       // Update Token FCM
+        private void updateToken(String apiKey, String token) {
+            try {
+                RequestBody formBody = new FormBody.Builder()
+                        .add("SerialNumber", apiKey + "")
+                        .add("FCMtoken", token + "")
+                        .add("sid", "Ruk")
+                        .build();
+                Request request = new Request.Builder()
+                        .url(url2)
+                        .post(formBody)
+                        .build();
+                OkHttpClient okHttpClient = new OkHttpClient();
+                okHttpClient.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if (!response.isSuccessful())
+                            throw new IOException("Unexpected code " + response);
+                    }
+                });
+                //Toast.makeText(this, "UPDATE Token", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-    }
-*/
+    */
     // Read SerialNumber
     private void getPreference() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
                 urlApi1.setUri(url1, serial);
@@ -476,7 +477,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //deviceSerialNumber.setText(String.format("%s", SerialNumber));
 
             } catch (JSONException e) {
-                dialog.showProblemDialog(MainActivity.this, "Problem", "Data Not Found\nPlease Check Device");
+                dialog.showProblemDialog(MainActivity.this, "Problem", "Data Not Found \n Please Check Device");
                 e.printStackTrace();
             } catch (Exception e) {
                 dialog.showProblemDialog(MainActivity.this, "Problem", "Program Stop");

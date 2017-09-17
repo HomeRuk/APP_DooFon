@@ -24,13 +24,13 @@ public class MyCustomFirebaseInstanceIdService extends FirebaseInstanceIdService
 
     private static final UrlApi urlApi2 = new UrlApi();
     private static final String sid = "Ruk";
-    private static final String url2 = "http://www.doofon.me/device/update/FCMtoken";
+    private static final String url2 = "http://192.168.44.51/DooFon/public/api/device/update/FCMtoken";
 
     @Override
     public void onTokenRefresh() {
         // if token expired this will get refresh token.
         String newToken = FirebaseInstanceId.getInstance().getToken();
-        //sendTokenToServer(newToken);
+        MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), newToken);
     }
 
     /*

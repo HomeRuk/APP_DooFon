@@ -34,7 +34,8 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     private static final int ZXING_CAMERA_PERMISSION = 1;
     private UrlApi urlApi = new UrlApi();
     private MyAlertDialog dialog = new MyAlertDialog();
-    private final static String url = "http://www.doofon.me/device/";
+    private static String serial;
+    private final static String url = "http://192.168.44.51/DooFon/public/api/device/";
     private SharedPreferences mPreferences;
 
     @Override
@@ -47,7 +48,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
         mScannerView = new ZXingScannerView(this);
         contentFrame.addView(mScannerView);
 
-        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
     }
 
     // Activity onStart is Rule Start Service Location
@@ -86,7 +87,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     public void handleResult(Result rawResult) {
         //Toast.makeText(this, "Contents = " + rawResult.getText() +
         //       ", Format = " + rawResult.getBarcodeFormat().toString(), Toast.LENGTH_SHORT).show();
-        final String serial = rawResult.getText();
+        serial = rawResult.getText();
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("Confirm ");
@@ -147,7 +148,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                 if (MyNetwork.isNetworkConnected(this)) {
                     //Set url & LoadJSON
                     urlApi.setUri(url, serial);
-                    new LoadJSONDevice().execute(urlApi.getUri());
+                    new LoadJsonDeviceScanner().execute(urlApi.getUri());
                     this.putPreference(serial);
                 } else
                     dialog.showProblemDialog(this, "Problem", "Not Connected Network");
@@ -157,7 +158,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     }
 
     // AsyncTask Load Data Device
-    public class LoadJSONDevice extends AsyncTask<String, Void, String> {
+    public class LoadJsonDeviceScanner extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... urls) {
@@ -185,7 +186,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
             try {
                 JSONObject json = new JSONObject(result);
                 String Serial = String.format("%s", json.getString("SerialNumber"));
-                if (Serial != null) {
+                if (Serial.equals(serial)) {
                     finish();
                     overridePendingTransition(0, 0);
                     Intent intent = new Intent(ScannerActivity.this, MainActivity.class);
@@ -198,7 +199,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                 editor.remove("Serial");
                 editor.apply();
 
-                dialog.showConnectDialog(ScannerActivity.this, "Connect", "Connect UnSuccess");
+                dialog.showConnectDialog(ScannerActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
         }

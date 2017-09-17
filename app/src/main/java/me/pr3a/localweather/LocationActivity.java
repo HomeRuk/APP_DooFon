@@ -64,9 +64,11 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     private double latitude = 0;
     private double longitude = 0;
     private String Serial = "Device ";
-    private String sid = "Ruk";
-    private final static String url1 = "http://www.doofon.me/device/";
-    private final static String url2 = "http://www.doofon.me/device/update/location";
+    private final static String sid = "Ruk";
+    private static String latitudeJson;
+    private static String longitudeJson;
+    private final static String url1 = "http://192.168.44.51/DooFon/public/api/device/";
+    private final static String url2 = "http://192.168.44.51/DooFon/public/api/device/update/location";
     private final static int LOCATION_PERMISSION_ID = 1001;
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
@@ -81,25 +83,25 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         this.showToolbar("Setting", "Device Location");
         //Show DrawerLayout and drawerToggle
         this.initInstances();
-        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
 
         if (MyNetwork.isNetworkConnected(this)) {
             //Read SerialNumber
             this.getPreference();
             //Load SerialNumber
-            new LoadJSON1().execute(urlApi1.getUri());
+            new LoadJsonLocation().execute(urlApi1.getUri());
             //read location
             try {
-                if(mPreferences.contains("Location")) {
+                if (mPreferences.contains("Location")) {
                     String location = mPreferences.getString("Location", "");
                     JSONObject json = new JSONObject(location);
                     Serial += String.format("%s", json.getString("SerialNumber"));
-                    String latitude2 = String.format("%s", json.getString("latitude"));
-                    String longitude2 = String.format("%s", json.getString("longitude"));
+                    latitudeJson = String.format("%s", json.getString("latitude"));
+                    longitudeJson = String.format("%s", json.getString("longitude"));
 
                     // Convect to double
-                    latitude = Double.parseDouble(latitude2);
-                    longitude = Double.parseDouble(longitude2);
+                    latitude = Double.parseDouble(latitudeJson);
+                    longitude = Double.parseDouble(longitudeJson);
                     Log.i("latitude", "=" + latitude);
                     Log.i("longitude", "=" + longitude);
                 }
@@ -139,7 +141,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.i("APP", "onRequestPermissionsResult");
         if (requestCode == LOCATION_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // ReStart Activity
+            // Restart Activity
             finish();
             overridePendingTransition(0, 0);
             startActivity(getIntent());
@@ -150,6 +152,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     @Override
     public void onLocationUpdated(Location location) {
         Log.i("APP", "onLocationUpdated");
+        Log.i("latitude updated", "=" + location.getLatitude());
+        Log.i("longitude updated", "=" + location.getLongitude());
         latitude = location.getLatitude();
         longitude = location.getLongitude();
     }
@@ -171,8 +175,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         mMap.clear();
         mMap.addMarker(new MarkerOptions()
                 .position(lo)
-                .title(Serial)
-                .snippet(latitude + " , " + longitude)
+                .title("My Device")
+//                .snippet(latitudeJson + " , " + longitudeJson)
         );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lo, 15));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -374,12 +378,12 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
 
     // Start LocationService
     private void startLocation() {
-        Log.i("APP", "StartLocation fail");
+        Log.i("APP", "StartLocation failed");
         if (SmartLocation.with(this).location().state().locationServicesEnabled()) {
             SmartLocation.with(this)
                     .location(new LocationGooglePlayServicesWithFallbackProvider(this))
                     .start(this);
-        } else Log.e("APP", "StartLocation fail");
+        } else Log.e("APP", "StartLocation failed");
     }
 
     /*
@@ -450,8 +454,9 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
-                    if (!response.isSuccessful())
+                    if (!response.isSuccessful()) {
                         throw new IOException("Unexpected code " + response);
+                    }
                 }
             });
             Toast.makeText(LocationActivity.this, "Save Location", Toast.LENGTH_SHORT).show();
@@ -464,7 +469,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     // Read SerialNumber
     private void getPreference() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
                 urlApi1.setUri(url1, serial);
@@ -480,7 +485,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     }
 
     // AsyncTask Load Data Device
-    private class LoadJSON1 extends AsyncTask<String, Void, String> {
+    private class LoadJsonLocation extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
             Log.i("APP", "doInBackground");
@@ -512,7 +517,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 editor.apply();
                 setMap();
             } catch (Exception e) {
-                dialog.showConnectDialog(LocationActivity.this, "Connect", "Connect UnSuccess");
+                dialog.showConnectDialog(LocationActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
             //Toast.makeText(LocationActivity.this, "Save successfully!", Toast.LENGTH_SHORT).show();

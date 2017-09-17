@@ -9,12 +9,12 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -32,12 +32,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class SettingsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
+public class SettingsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String url1 = "http://www.doofon.me/device/";
-    private final static String url2 = "http://www.doofon.me/device/update/threshold";
+    private final static String url1 = "http://192.168.44.51/DooFon/public/api/device/";
+    private final static String url2 = "http://192.168.44.51/DooFon/public/api/device/update/threshold";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
@@ -45,7 +44,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     private TextView txtValue;
     private CircleProgressView mCircleView;
     private int valueInt = 0;
-    private String sid = "Ruk";
+    private final String sid = "Ruk";
 
 
     @Override
@@ -58,37 +57,44 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
         this.initInstances();
 
         txtValue = (TextView) findViewById(R.id.textView_seekBar);
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
-        swipeRefreshLayout.setOnRefreshListener(this);
-        /**
-         * Showing Swipe Refresh animation on activity create
-         * As animation won't start on onCreate, post runnable is used
-         */
-        swipeRefreshLayout.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        swipeRefreshLayout.setRefreshing(true);
-                                        //Read Serialnumber & setUrl
-                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
-                                        conLoadJSON();
-                                    }
-                                }
-        );
+
+        //Read Serialnumber & setUrl
+        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
+        conLoadJSON();
 
         this.onCircleView();
-
-        //Show SeekBar
-        //this.onSeekBar();
     }
 
-    /**
-     * This method is called when swipe refresh is pulled down
-     */
+    // Create MenuBar on Toolbar
     @Override
-    public void onRefresh() {
-        // Connect loadJson choice 1 setTime
-        this.conLoadJSON();
-        Toast.makeText(this, "Refresh Setting Threshold", Toast.LENGTH_SHORT).show();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_settings_toolbar, menu);
+        return true;
+    }
+
+    // Click button refresh
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_setting_refresh) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Refresh Threshold");
+            dialog.setMessage("Do you want to Minimum Threshold refresh ?");
+            dialog.setIcon(R.drawable.ic_loop_black_24dp);
+            dialog.setCancelable(true);
+            dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    conLoadJSON();
+                    Toast.makeText(SettingsActivity.this, "Refresh Setting Threshold", Toast.LENGTH_SHORT).show();
+                }
+            });
+            dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).show();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     // Select Menu Navigation
@@ -222,9 +228,9 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     public void onButtonSave(final View view) {
 
         AlertDialog.Builder dialogSave = new AlertDialog.Builder(this);
-        dialogSave.setTitle("Refresh Weather");
-        dialogSave.setMessage("Do you want to weather refresh ?");
-        dialogSave.setIcon(R.drawable.ic_loop_black_24dp);
+        dialogSave.setTitle("Save Threshold");
+        dialogSave.setMessage("Do you want to Save Minimum Threshold ?");
+        dialogSave.setIcon(R.drawable.ic_done_blue24dp);
         dialogSave.setCancelable(true);
         dialogSave.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialogSave, int which) {
@@ -258,10 +264,12 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                         }.execute();
                         //dialog.showConnectDialog(SettingsActivity.this, "Save", "Success");
                         view.setEnabled(true);
-                    } else
+                    } else {
                         dialog.showProblemDialog(SettingsActivity.this, "Problem", "Not Connected Network");
-                } else
+                    }
+                } else {
                     Toast.makeText(SettingsActivity.this, "Please Select threshold", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         dialogSave.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -330,22 +338,18 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     private void conLoadJSON() {
         // Check Network Connected
         if (MyNetwork.isNetworkConnected(this)) {
-            // showing refresh animation before making http call
-            swipeRefreshLayout.setRefreshing(true);
             //readData Serialnumber
             this.getPreference();
             new LoadJSON2().execute(urlApi1.getUri());
         } else {
             dialog.showProblemDialog(this, "Problem", "Not Connected Network");
         }
-        // stopping swipe refresh
-        swipeRefreshLayout.setRefreshing(false);
     }
 
     //Read SerialNumber
     private void getPreference() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
                 urlApi1.setUri(url1, serial);

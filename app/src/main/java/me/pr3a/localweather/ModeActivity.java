@@ -35,8 +35,8 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String url1 = "http://www.doofon.me/device/";
-    private final static String url2 = "http://www.doofon.me/device/update/mode";
+    private final static String url1 = "http://192.168.44.51/DooFon/public/api/device/";
+    private final static String url2 = "http://192.168.44.51/DooFon/public/api/device/update/mode";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
@@ -57,7 +57,7 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        /**
+        /*
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
@@ -65,7 +65,7 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
-                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+                                        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
                                         conLoadJSON();
                                     }
                                 }
@@ -288,10 +288,11 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
         // stopping swipe refresh
         swipeRefreshLayout.setRefreshing(false);
     }
+
     //Read SerialNumber
     private void readData() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url
                 urlApi1.setUri(url1, serial);

@@ -33,7 +33,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String url = "http://www.doofon.me/device/";
+    private final static String url = "http://192.168.44.51/DooFon/public/api/device/";
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
     private SharedPreferences mPreferences;
@@ -62,7 +62,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
-                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+                                        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
                                         conLoadJSON();
                                     }
                                 }
@@ -188,8 +188,9 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.clear();
                 editor.apply();
-
+                //Show Toast massage
                 Toast.makeText(DeviceActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+
                 //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -245,7 +246,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     // Read SerialNumber
     private void getPreference() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
                 urlApi.setUri(url, serial);
@@ -293,6 +294,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
             Log.d("APP", "onPostExecute");
             super.onPostExecute(result);
 
+            //Read Json and Show DetailDeive
             try {
                 JSONObject json = new JSONObject(result);
                 //System.out.println(result);
