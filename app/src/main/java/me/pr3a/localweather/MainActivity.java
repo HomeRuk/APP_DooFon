@@ -466,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 weatherHumidity.setText(String.format("%s %%", humidity.trim()));
                 weatherPressure.setText(String.format("%s hPa", pressure.trim()));
                 weatherDewPoint.setText(String.format("%s ℃", dewPoint.trim()));
-                weatherLight.setText(String.format("%s", light.trim()));
+                weatherLight.setText(String.format("%s lx", light.trim()));
                 if ((probabilityRain != null) && (!(probabilityRain.equals(""))) && (!(probabilityRain.equals("null")))) {
                     //mWaveLoadingView.setTopTitle("Prob. Rain:");
                     mWaveLoadingView.setCenterTitle(probabilityRain + " %");
@@ -477,7 +477,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //deviceSerialNumber.setText(String.format("%s", SerialNumber));
 
             } catch (JSONException e) {
-                dialog.showProblemDialog(MainActivity.this, "Problem", "Data Not Found \n Please Check Device");
+                dialog.showProblemDialog(MainActivity.this, "Problem", "Data Not Found" + "\n" + "Please Check Device");
                 e.printStackTrace();
             } catch (Exception e) {
                 dialog.showProblemDialog(MainActivity.this, "Problem", "Program Stop");
