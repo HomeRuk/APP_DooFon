@@ -56,6 +56,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+import static me.pr3a.localweather.Helper.MyNetwork.URLLOCATION;
 
 public class LocationActivity extends AppCompatActivity implements OnLocationUpdatedListener, OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
 
@@ -63,12 +65,9 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     private GoogleMap mMap;
     private double latitude = 0;
     private double longitude = 0;
-    private String Serial = "Device ";
     private final static String sid = "Ruk";
     private static String latitudeJson;
     private static String longitudeJson;
-    private final static String url1 = "http://192.168.44.51/DooFon/public/api/device/";
-    private final static String url2 = "http://192.168.44.51/DooFon/public/api/device/update/location";
     private final static int LOCATION_PERMISSION_ID = 1001;
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
@@ -95,7 +94,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 if (mPreferences.contains("Location")) {
                     String location = mPreferences.getString("Location", "");
                     JSONObject json = new JSONObject(location);
-                    Serial += String.format("%s", json.getString("SerialNumber"));
+                    //Serial += String.format("%s", json.getString("SerialNumber"));
                     latitudeJson = String.format("%s", json.getString("latitude"));
                     longitudeJson = String.format("%s", json.getString("longitude"));
 
@@ -174,8 +173,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         LatLng lo = new LatLng(latitude, longitude);
         mMap.clear();
         mMap.addMarker(new MarkerOptions()
-                .position(lo)
-                .title("My Device")
+                        .position(lo)
+                        .title("My Device")
 //                .snippet(latitudeJson + " , " + longitudeJson)
         );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lo, 15));
@@ -472,8 +471,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi1.setUri(url1, serial);
-                urlApi2.setUri(url2, serial);
+                urlApi1.setUri(URLDEVICE, serial);
+                urlApi2.setUri(URLLOCATION, serial);
             }
         } catch (Exception e) {
             //Clear SharedPreferences
