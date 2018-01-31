@@ -1,6 +1,7 @@
 package me.pr3a.localweather;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -88,7 +89,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             //Read SerialNumber
             this.getPreference();
             //Load SerialNumber
-            new LoadJsonLocation().execute(urlApi1.getUri());
+            new LoadJsonLocation(LocationActivity.this).execute(urlApi1.getUri());
             //read location
             try {
                 if (mPreferences.contains("Location")) {
@@ -485,6 +486,22 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
 
     // AsyncTask Load Data Device
     private class LoadJsonLocation extends AsyncTask<String, Void, String> {
+        // ProgressDialog
+        private final ProgressDialog mProgressDialog;
+
+        LoadJsonLocation(LocationActivity activity) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.show();
+        }
+
         @Override
         protected String doInBackground(String... urls) {
             Log.i("APP", "doInBackground");
@@ -520,6 +537,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 e.printStackTrace();
             }
             //Toast.makeText(LocationActivity.this, "Save successfully!", Toast.LENGTH_SHORT).show();
+            mProgressDialog.dismiss();
         }
     }
 }
