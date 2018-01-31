@@ -22,12 +22,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class ConnectDeviceActivity extends AppCompatActivity {
 
     private UrlApi urlApi = new UrlApi();
     private MyAlertDialog dialog = new MyAlertDialog();
     private static String serial;
-    private final static String url = "http://192.168.44.51/DooFon/public/api/device/";
     private SharedPreferences mPreferences;
     private EditText editSerial;
 
@@ -58,7 +59,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
             //Check Connect network
             if (MyNetwork.isNetworkConnected(this)) {
                 //Set url & LoadJSON
-                urlApi.setUri(url, serial);
+                urlApi.setUri(URLDEVICE, serial);
                 new LoadJsonDevice().execute(urlApi.getUri());
 
                 this.putPreference();
@@ -68,7 +69,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
             Toast.makeText(ConnectDeviceActivity.this, "Please fill in Serial Number", Toast.LENGTH_SHORT).show();
     }
 
-    // Button Connect
+    // ButtonBarcode Connect
     public void onButtonBarcode(View view) {
         finish();
         overridePendingTransition(0, 0);
@@ -77,7 +78,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
     }
 
     // AsyncTask Load Data Device
-    public class LoadJsonDevice extends AsyncTask<String, Void, String> {
+    private class LoadJsonDevice extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... urls) {
