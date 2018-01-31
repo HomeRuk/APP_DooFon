@@ -20,9 +20,11 @@ import okhttp3.Response;
 
 public class MyNetwork {
 
-    private static final UrlApi urlApi2 = new UrlApi();
-    private static final String sid = "Ruk";
-    private static final String url2 = "http://192.168.44.51/DooFon/public/api/device/update/FCMtoken";
+    public final static String URLDEVICE = "http://192.168.44.51/DooFon/public/api/device/";
+    public final static String URLWEATHER = "http://192.168.44.51/DooFon/public/api/weather/";
+    public final static String URLLOCATION = "http://192.168.44.51/DooFon/public/api/device/update/location";
+    public final static String URLFCMTOKEN = "http://192.168.44.51/DooFon/public/api/device/update/FCMtoken";
+    public final static String URLTHRESHOLD = "http://192.168.44.51/DooFon/public/api/device/update/threshold";
 
     /**
      * Checks if the device is connected to the network.
