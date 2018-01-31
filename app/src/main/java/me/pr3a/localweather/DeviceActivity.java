@@ -29,11 +29,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class DeviceActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String url = "http://192.168.44.51/DooFon/public/api/device/";
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
     private SharedPreferences mPreferences;
@@ -54,7 +55,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        /**
+        /*
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
@@ -158,7 +159,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         return true;
     }
 
-    //Button back
+    // Button back
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -207,7 +208,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         }).show();
     }
 
-    //Show Toolbar
+    // Show Toolbar
     private void showToolbar(String title, String subTitle) {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(title);
@@ -215,7 +216,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         setSupportActionBar(toolbar);
     }
 
-    //Show DrawerLayout and drawerToggle
+    // Show DrawerLayout and drawerToggle
     private void initInstances() {
         // NavigationView
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -249,7 +250,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
             if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi.setUri(url, serial);
+                urlApi.setUri(URLDEVICE, serial);
             }
         } catch (Exception e) {
             //Clear SharedPreferences
@@ -294,7 +295,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
             Log.d("APP", "onPostExecute");
             super.onPostExecute(result);
 
-            //Read Json and Show DetailDeive
+            //Read Json and Show DetailDevice
             try {
                 JSONObject json = new JSONObject(result);
                 //System.out.println(result);
