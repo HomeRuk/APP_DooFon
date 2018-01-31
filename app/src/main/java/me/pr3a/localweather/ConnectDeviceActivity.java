@@ -1,5 +1,6 @@
 package me.pr3a.localweather;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 //import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
@@ -60,7 +61,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
             if (MyNetwork.isNetworkConnected(this)) {
                 //Set url & LoadJSON
                 urlApi.setUri(URLDEVICE, serial);
-                new LoadJsonDevice().execute(urlApi.getUri());
+                new LoadJSONDevice(ConnectDeviceActivity.this).execute(urlApi.getUri());
 
                 this.putPreference();
             } else
@@ -78,7 +79,22 @@ public class ConnectDeviceActivity extends AppCompatActivity {
     }
 
     // AsyncTask Load Data Device
-    private class LoadJsonDevice extends AsyncTask<String, Void, String> {
+    private class LoadJSONDevice extends AsyncTask<String, Void, String> {
+        // ProgressDialog
+        private final ProgressDialog mProgressDialog;
+
+        LoadJSONDevice(ConnectDeviceActivity activity) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.show();
+        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -122,6 +138,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
                 dialog.showConnectDialog(ConnectDeviceActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
+            mProgressDialog.dismiss();
         }
     }
 }

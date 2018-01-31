@@ -1,6 +1,7 @@
 package me.pr3a.localweather;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -236,7 +237,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
             //readData Serialnumber
             this.getPreference();
             //LoadJSON
-            new LoadJSON2().execute(urlApi.getUri());
+            new LoadJSON2(DeviceActivity.this).execute(urlApi.getUri());
         } else {
             dialog.showProblemDialog(this, "Problem", "Not Connected Network");
         }
@@ -270,6 +271,21 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         private final TextView deviceThreshold = (TextView) findViewById(R.id.txt_Threshold);
         private final TextView deviceCreate = (TextView) findViewById(R.id.txt_Create);
         private final TextView deviceUpdated = (TextView) findViewById(R.id.txt_Updated);
+        // ProgressDialog
+        private final ProgressDialog mProgressDialog;
+
+        LoadJSON2(DeviceActivity activity) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.show();
+        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -316,6 +332,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 dialog.showProblemDialog(DeviceActivity.this, "Problem", "Read Data fail");
                 e.printStackTrace();
             }
+            mProgressDialog.dismiss();
         }
     }
 

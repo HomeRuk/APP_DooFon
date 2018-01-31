@@ -3,6 +3,7 @@ package me.pr3a.localweather;
 //import android.content.Context;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -285,7 +286,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             this.getPreference();
             // choice 1 setTime
             if (choice == 1) {
-                TimerTask taskNew = new TimerTask() {
+                new LoadJSON(MainActivity.this).execute(urlApi1.getUri());
+              /*  TimerTask taskNew = new TimerTask() {
                     public void run() {
                         // series
                         new LoadJSON().execute(urlApi1.getUri());
@@ -294,9 +296,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 };
                 Timer timer = new Timer();
-                timer.scheduleAtFixedRate(taskNew, 5 * 100, 300 * 1000);
+                timer.scheduleAtFixedRate(taskNew, 5 * 100, 300 * 1000);*/
             } else {
-                new LoadJSON().execute(urlApi1.getUri());
+                new LoadJSON(MainActivity.this).execute(urlApi1.getUri());
             }
         } else {
             dialog.showProblemDialog(this, "Problem", "Not Connected Network");
@@ -336,6 +338,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //private final TextView weatherProbabilityRain = (TextView) findViewById(R.id.weather_probabilityRain);
         private final WaveLoadingView mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
         //private final TextView deviceSerialNumber = (TextView) findViewById(R.id.main_serialNumber);
+        // ProgressDialog
+        private final ProgressDialog mProgressDialog;
 
         private String temp = "";
         private String humidity = "";
@@ -349,6 +353,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         private String probabilityRain = "";
         private double tempDouble;
         private int rainInt, timeInt;
+
+        LoadJSON(MainActivity activity) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.show();
+        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -439,6 +456,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 dialog.showProblemDialog(MainActivity.this, "Problem", "Program Stop");
                 e.printStackTrace();
             }
+            mProgressDialog.dismiss();
         }
     }
 }

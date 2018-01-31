@@ -1,5 +1,6 @@
 package me.pr3a.localweather;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
@@ -54,7 +55,7 @@ public class LogoActivity extends AppCompatActivity {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
                 urlApi.setUri(URLDEVICE, serial);
-                new LoadJSON0().execute(urlApi.getUri());
+                new LoadJSON0(LogoActivity.this).execute(urlApi.getUri());
             } else {
                 intentDelay();
             }
@@ -85,6 +86,21 @@ public class LogoActivity extends AppCompatActivity {
 
     // AsyncTask Load Data Device
     private class LoadJSON0 extends AsyncTask<String, Void, String> {
+        // ProgressDialog
+        private final ProgressDialog mProgressDialog;
+
+        LoadJSON0(LogoActivity activity) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.show();
+        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -127,6 +143,7 @@ public class LogoActivity extends AppCompatActivity {
 
                 dialog.showProblemDialog(LogoActivity.this, "Problem", "Program Stop");
             }
+            mProgressDialog.dismiss();
         }
     }
 }

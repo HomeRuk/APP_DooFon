@@ -1,6 +1,7 @@
 package me.pr3a.localweather;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -148,7 +149,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                 if (MyNetwork.isNetworkConnected(this)) {
                     //Set url & LoadJSON
                     urlApi.setUri(URLDEVICE, serial);
-                    new LoadJsonDeviceScanner().execute(urlApi.getUri());
+                    new LoadJsonDeviceScanner(ScannerActivity.this).execute(urlApi.getUri());
                     this.putPreference(serial);
                 } else
                     dialog.showProblemDialog(this, "Problem", "Not Connected Network");
@@ -159,6 +160,21 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
 
     // AsyncTask Load Data Device
     private class LoadJsonDeviceScanner extends AsyncTask<String, Void, String> {
+        // ProgressDialog
+        private final ProgressDialog mProgressDialog;
+
+        LoadJsonDeviceScanner(ScannerActivity activity) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.show();
+        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -202,6 +218,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                 dialog.showConnectDialog(ScannerActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
+            mProgressDialog.dismiss();
         }
     }
 }

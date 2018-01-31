@@ -1,6 +1,7 @@
 package me.pr3a.localweather;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -341,7 +342,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
         if (MyNetwork.isNetworkConnected(this)) {
             //readData Serialnumber
             this.getPreference();
-            new LoadJSON2().execute(urlApi1.getUri());
+            new LoadJSONSetting(SettingsActivity.this).execute(urlApi1.getUri());
         } else {
             dialog.showProblemDialog(this, "Problem", "Not Connected Network");
         }
@@ -366,7 +367,22 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     }
 
     // AsyncTask Load Data Device
-    private class LoadJSON2 extends AsyncTask<String, Void, String> {
+    private class LoadJSONSetting extends AsyncTask<String, Void, String> {
+        // ProgressDialog
+        private final ProgressDialog mProgressDialog;
+
+        LoadJSONSetting(SettingsActivity activity) {
+            mProgressDialog = new ProgressDialog(activity);
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.show();
+        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -400,6 +416,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                 dialog.showProblemDialog(SettingsActivity.this, "Problem", "Not Connected Internet");
                 e.printStackTrace();
             }
+            mProgressDialog.dismiss();
         }
     }
 }
