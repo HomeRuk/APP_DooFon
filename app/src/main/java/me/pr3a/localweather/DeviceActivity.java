@@ -29,11 +29,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class DeviceActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String url = "http://www.doofon.me/device/";
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
     private SharedPreferences mPreferences;
@@ -54,7 +55,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        /**
+        /*
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
@@ -62,7 +63,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
-                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+                                        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
                                         conLoadJSON();
                                     }
                                 }
@@ -110,12 +111,14 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 Intent intentSettings = new Intent(this, SettingsActivity.class);
                 startActivity(intentSettings);
                 break;
+            /*
             case R.id.nav_mode:
                 finish();
                 overridePendingTransition(0, 0);
                 Intent intentMode = new Intent(this, ModeActivity.class);
                 startActivity(intentMode);
                 break;
+                */
             case R.id.nav_disconnect:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle(MyAlertDialog.titleDisconnect);
@@ -156,7 +159,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         return true;
     }
 
-    //Button back
+    // Button back
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -186,8 +189,9 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.clear();
                 editor.apply();
-
+                //Show Toast massage
                 Toast.makeText(DeviceActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
+
                 //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -204,7 +208,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         }).show();
     }
 
-    //Show Toolbar
+    // Show Toolbar
     private void showToolbar(String title, String subTitle) {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(title);
@@ -212,7 +216,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         setSupportActionBar(toolbar);
     }
 
-    //Show DrawerLayout and drawerToggle
+    // Show DrawerLayout and drawerToggle
     private void initInstances() {
         // NavigationView
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -243,10 +247,10 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     // Read SerialNumber
     private void getPreference() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi.setUri(url, serial);
+                urlApi.setUri(URLDEVICE, serial);
             }
         } catch (Exception e) {
             //Clear SharedPreferences
@@ -291,6 +295,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
             Log.d("APP", "onPostExecute");
             super.onPostExecute(result);
 
+            //Read Json and Show DetailDevice
             try {
                 JSONObject json = new JSONObject(result);
                 //System.out.println(result);

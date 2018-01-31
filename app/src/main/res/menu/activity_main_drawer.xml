@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group
-        android:checkable="true">
+    <group android:checkable="true">
         <item
             android:id="@+id/nav_main"
             android:icon="@drawable/ic_home_black_24dp"
@@ -23,10 +22,6 @@
                 android:id="@+id/nav_setting"
                 android:icon="@drawable/ic_settings_black_24dp"
                 android:title="@string/drawer_predictthreshold" />
-            <item
-                android:id="@+id/nav_mode"
-                android:icon="@drawable/ic_arrow_drop_down_circle_black_24dp"
-                android:title="@string/mode" />
             <item
                 android:id="@+id/nav_location"
                 android:icon="@drawable/ic_my_location_black_24dp"

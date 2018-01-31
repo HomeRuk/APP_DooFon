@@ -19,11 +19,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class LogoActivity extends AppCompatActivity {
 
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
-    private final static String url = "http://128.199.210.91/device/";
     private SharedPreferences mPreferences;
 
     @Override
@@ -39,7 +40,7 @@ public class LogoActivity extends AppCompatActivity {
 
         if (MyNetwork.isNetworkConnected(this)) {
             //Read SerialNumber and if has SerialNumber connect device
-            mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+            mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
             getPreference();
         } else {
             dialog.showProblemDialog(LogoActivity.this, "Problem", "Not Connected Network");
@@ -49,12 +50,12 @@ public class LogoActivity extends AppCompatActivity {
 
     private void getPreference() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi.setUri(url, serial);
+                urlApi.setUri(URLDEVICE, serial);
                 new LoadJSON0().execute(urlApi.getUri());
-            }else {
+            } else {
                 intentDelay();
             }
         } catch (Exception e) {
@@ -69,43 +70,7 @@ public class LogoActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-   /* // Read SerialNumber
-    private void readData() {
-        try {
-            FileInputStream fIn = openFileInput(FILENAME);
-            InputStreamReader reader = new InputStreamReader(fIn);
 
-            char[] buffer = new char[READ_BLOCK_SIZE];
-            String data = "";
-            int charReadCount;
-            while ((charReadCount = reader.read(buffer)) > 0) {
-                String readString = String.copyValueOf(buffer, 0, charReadCount);
-                data += readString;
-                buffer = new char[READ_BLOCK_SIZE];
-            }
-            reader.close();
-            if (!(data.equals(""))) {
-                //Set url & LoadJSON
-                urlApi.setUri(url, data);
-                new LoadJSON0().execute(urlApi.getUri());
-            } else {
-                intentDelay();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                writer.write("");
-                writer.flush();
-                writer.close();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
-            intentDelay();
-        }
-    }
-*/
     //Delay to page ConnectDevice
     private void intentDelay() {
         Handler handler = new Handler();
@@ -149,11 +114,10 @@ public class LogoActivity extends AppCompatActivity {
                 String Serial = String.format("%s", json.getString("SerialNumber"));
                 if (Serial != null) {
                     Intent intent = new Intent(LogoActivity.this, MainActivity.class);
-                    //intent.putExtra("Data_SerialNumber", Serial);
                     startActivity(intent);
                     finish();
                 } else {
-                    dialog.showConnectDialog(LogoActivity.this, "Connect", "Connect UnSuccess");
+                    dialog.showConnectDialog(LogoActivity.this, "Connect", "Connection failed");
                 }
             } catch (Exception e) {
                 //Clear SharedPreferences

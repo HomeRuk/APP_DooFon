@@ -31,12 +31,13 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class ModeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String url1 = "http://www.doofon.me/device/";
-    private final static String url2 = "http://www.doofon.me/device/update/mode";
+    private final static String url2 = "http://192.168.44.51/DooFon/public/api/device/update/mode";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
@@ -57,7 +58,7 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        /**
+        /*
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
@@ -65,7 +66,7 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
-                                        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
+                                        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
                                         conLoadJSON();
                                     }
                                 }
@@ -115,11 +116,12 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
                 Intent intentSetting = new Intent(this, SettingsActivity.class);
                 startActivity(intentSetting);
                 break;
-            case R.id.nav_mode:
+           /*case R.id.nav_mode:
                 finish();
                 overridePendingTransition(0, 0);
                 startActivity(getIntent());
                 break;
+                */
             case R.id.nav_disconnect:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setTitle(MyAlertDialog.titleDisconnect);
@@ -287,13 +289,14 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
         // stopping swipe refresh
         swipeRefreshLayout.setRefreshing(false);
     }
+
     //Read SerialNumber
     private void readData() {
         try {
-            if(mPreferences.contains("Serial")) {
+            if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url
-                urlApi1.setUri(url1, serial);
+                urlApi1.setUri(URLDEVICE, serial);
                 urlApi2.setUri(url2, serial);
             }
         } catch (Exception e) {
@@ -339,10 +342,10 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
 
                 if (mode.equals("1")) {
                     radio1.setChecked(true);
-                    System.out.println(mode + ".....");
+                    //System.out.println(mode + ".....");
                 } else if (mode.equals("2")) {
                     radio2.setChecked(true);
-                    System.out.println(mode + "######");
+                    //System.out.println(mode + "######");
                 }
             } catch (Exception e) {
                 dialog.showProblemDialog(ModeActivity.this, "Problem", "Not Connected Internet2");

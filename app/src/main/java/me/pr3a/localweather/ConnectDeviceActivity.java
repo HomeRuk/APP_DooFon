@@ -22,12 +22,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class ConnectDeviceActivity extends AppCompatActivity {
 
     private UrlApi urlApi = new UrlApi();
     private MyAlertDialog dialog = new MyAlertDialog();
-    private String serial;
-    private final static String url = "http://www.doofon.me/device/";
+    private static String serial;
     private SharedPreferences mPreferences;
     private EditText editSerial;
 
@@ -35,17 +36,8 @@ public class ConnectDeviceActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect_device);
-
         bindWidgets();
-
-        mPreferences =  getSharedPreferences("Serialnumber",MODE_PRIVATE);
-
-        /*String Ccontent;
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null) {
-            Ccontent = bundle.getString("C_content");
-            editSerial.setText(Ccontent);
-        }*/
+        mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
     }
 
     private void bindWidgets() {
@@ -67,8 +59,9 @@ public class ConnectDeviceActivity extends AppCompatActivity {
             //Check Connect network
             if (MyNetwork.isNetworkConnected(this)) {
                 //Set url & LoadJSON
-                urlApi.setUri(url, serial);
-                new LoadJSON1().execute(urlApi.getUri());
+                urlApi.setUri(URLDEVICE, serial);
+                new LoadJsonDevice().execute(urlApi.getUri());
+
                 this.putPreference();
             } else
                 dialog.showProblemDialog(ConnectDeviceActivity.this, "Problem", "Not Connected Network");
@@ -76,15 +69,8 @@ public class ConnectDeviceActivity extends AppCompatActivity {
             Toast.makeText(ConnectDeviceActivity.this, "Please fill in Serial Number", Toast.LENGTH_SHORT).show();
     }
 
-    // Button Connect
+    // ButtonBarcode Connect
     public void onButtonBarcode(View view) {
-        /*if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA}, ZXING_CAMERA_PERMISSION);
-        } else {
-            finish();
-            Intent intentBarcode = new Intent(this, ScannerActivity.class);
-            startActivity(intentBarcode);
-        }*/
         finish();
         overridePendingTransition(0, 0);
         Intent intentBarcode = new Intent(this, ScannerActivity.class);
@@ -92,7 +78,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
     }
 
     // AsyncTask Load Data Device
-    public class LoadJSON1 extends AsyncTask<String, Void, String> {
+    private class LoadJsonDevice extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... urls) {
@@ -120,22 +106,20 @@ public class ConnectDeviceActivity extends AppCompatActivity {
             try {
                 JSONObject json = new JSONObject(result);
                 String Serial = String.format("%s", json.getString("SerialNumber"));
-                if (Serial != null) {
+                if (Serial.equals(serial)) {
                     finish();
                     overridePendingTransition(0, 0);
                     Intent intent = new Intent(ConnectDeviceActivity.this, MainActivity.class);
-                    //intent.putExtra("Data_SerialNumber", Serial);
                     startActivity(intent);
                     Toast.makeText(ConnectDeviceActivity.this, "Connection successfully!", Toast.LENGTH_SHORT).show();
                 }
-
             } catch (Exception e) {
                 //Clear SharedPreferences
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.remove("Serial");
                 editor.apply();
 
-                dialog.showConnectDialog(ConnectDeviceActivity.this, "Connect", "Connect UnSuccess");
+                dialog.showConnectDialog(ConnectDeviceActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
         }
