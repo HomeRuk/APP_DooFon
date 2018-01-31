@@ -14,7 +14,6 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.Toast;
-//import android.widget.Toast;
 
 import com.google.zxing.Result;
 
@@ -28,6 +27,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class ScannerActivity extends BaseScannerActivity implements ZXingScannerView.ResultHandler {
 
     private ZXingScannerView mScannerView;
@@ -35,7 +36,6 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     private UrlApi urlApi = new UrlApi();
     private MyAlertDialog dialog = new MyAlertDialog();
     private static String serial;
-    private final static String url = "http://192.168.44.51/DooFon/public/api/device/";
     private SharedPreferences mPreferences;
 
     @Override
@@ -147,7 +147,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                 //Check Connect network
                 if (MyNetwork.isNetworkConnected(this)) {
                     //Set url & LoadJSON
-                    urlApi.setUri(url, serial);
+                    urlApi.setUri(URLDEVICE, serial);
                     new LoadJsonDeviceScanner().execute(urlApi.getUri());
                     this.putPreference(serial);
                 } else
@@ -158,7 +158,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     }
 
     // AsyncTask Load Data Device
-    public class LoadJsonDeviceScanner extends AsyncTask<String, Void, String> {
+    private class LoadJsonDeviceScanner extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... urls) {

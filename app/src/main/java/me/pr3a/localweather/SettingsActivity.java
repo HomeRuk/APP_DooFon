@@ -32,11 +32,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+import static me.pr3a.localweather.Helper.MyNetwork.URLTHRESHOLD;
+
 public class SettingsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
-    private final static String url1 = "http://192.168.44.51/DooFon/public/api/device/";
-    private final static String url2 = "http://192.168.44.51/DooFon/public/api/device/update/threshold";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
@@ -352,8 +353,8 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
             if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi1.setUri(url1, serial);
-                urlApi2.setUri(url2, serial);
+                urlApi1.setUri(URLDEVICE, serial);
+                urlApi2.setUri(URLTHRESHOLD, serial);
             }
         } catch (Exception e) {
             //Clear SharedPreferences

@@ -31,11 +31,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class ModeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
 
     private Toolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private final static String url1 = "http://192.168.44.51/DooFon/public/api/device/";
     private final static String url2 = "http://192.168.44.51/DooFon/public/api/device/update/mode";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
@@ -295,7 +296,7 @@ public class ModeActivity extends AppCompatActivity implements NavigationView.On
             if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url
-                urlApi1.setUri(url1, serial);
+                urlApi1.setUri(URLDEVICE, serial);
                 urlApi2.setUri(url2, serial);
             }
         } catch (Exception e) {

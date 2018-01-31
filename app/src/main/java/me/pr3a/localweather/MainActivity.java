@@ -30,7 +30,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -38,26 +37,22 @@ import me.itangqi.waveloadingview.WaveLoadingView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
 import me.pr3a.localweather.Helper.UrlApi;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import static me.pr3a.localweather.Helper.MyNetwork.URLFCMTOKEN;
+import static me.pr3a.localweather.Helper.MyNetwork.URLWEATHER;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
 
     private Toolbar toolbar;
     private TextView weatherIcon;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private static final String url1 = "http://192.168.44.51/DooFon/public/api/weather/";
-    private static final String url2 = "http://192.168.44.51/DooFon/public/api/device/update/FCMtoken";
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
     private SharedPreferences mPreferences;
-    //private String sid = "Ruk";
 
     // Event onCreate
     @Override
@@ -74,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Show DrawerLayout and drawerToggle
         this.initInstances();
 
-        /**
+        /*
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
@@ -89,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         //updateToken
                                         String token = FirebaseInstanceId.getInstance().getToken();
                                         MyCustomFirebaseInstanceIdService.sendTokenToServer(urlApi2.getApikey(), token);
-                                        //this.updateToken(urlApi2.getApikey(), token);
                                     }
                                 }
         );
@@ -224,7 +218,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(0);
             overridePendingTransition(0, 0);
-            //finish();
             super.onBackPressed();
         }
     }
@@ -312,46 +305,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         swipeRefreshLayout.setRefreshing(false);
     }
 
-    /*
-       // Update Token FCM
-        private void updateToken(String apiKey, String token) {
-            try {
-                RequestBody formBody = new FormBody.Builder()
-                        .add("SerialNumber", apiKey + "")
-                        .add("FCMtoken", token + "")
-                        .add("sid", "Ruk")
-                        .build();
-                Request request = new Request.Builder()
-                        .url(url2)
-                        .post(formBody)
-                        .build();
-                OkHttpClient okHttpClient = new OkHttpClient();
-                okHttpClient.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        if (!response.isSuccessful())
-                            throw new IOException("Unexpected code " + response);
-                    }
-                });
-                //Toast.makeText(this, "UPDATE Token", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    */
     // Read SerialNumber
     private void getPreference() {
         try {
             if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi1.setUri(url1, serial);
-                urlApi2.setUri(url2, serial);
+                urlApi1.setUri(URLWEATHER, serial);
+                urlApi2.setUri(URLFCMTOKEN, serial);
             }
         } catch (Exception e) {
             //Clear SharedPreferences
@@ -422,7 +383,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 rain += String.format("%s", json.getString("rain"));
                 updated_at += String.format("%s", json.getString("updated_at"));
                 probabilityRain += String.format("%s", json.getString("PredictPercent"));
-                //SerialNumber += String.format("%s", json.getString("SerialNumber"));
 
                 String time = updated_at.substring(11, 13);
 
@@ -468,13 +428,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 weatherDewPoint.setText(String.format("%s ℃", dewPoint.trim()));
                 weatherLight.setText(String.format("%s lx", light.trim()));
                 if ((probabilityRain != null) && (!(probabilityRain.equals(""))) && (!(probabilityRain.equals("null")))) {
-                    //mWaveLoadingView.setTopTitle("Prob. Rain:");
                     mWaveLoadingView.setCenterTitle(probabilityRain + " %");
                     mWaveLoadingView.setProgressValue((int) Double.parseDouble(probabilityRain));
-                    //mWaveLoadingView.setAmplitudeRatio(Integer.parseInt(probabilityRain));
-                    //weatherProbabilityRain.setText(String.format("Probability Rain: %s %%", probabilityRain));
                 }
-                //deviceSerialNumber.setText(String.format("%s", SerialNumber));
 
             } catch (JSONException e) {
                 dialog.showProblemDialog(MainActivity.this, "Problem", "Data Not Found" + "\n" + "Please Check Device");
@@ -483,9 +439,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 dialog.showProblemDialog(MainActivity.this, "Problem", "Program Stop");
                 e.printStackTrace();
             }
-           /* if (PD.isShowing()) {
-                PD.dismiss();
-            }*/
         }
     }
 }

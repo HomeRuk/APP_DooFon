@@ -19,11 +19,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+
 public class LogoActivity extends AppCompatActivity {
 
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
-    private final static String url = "http://192.168.44.51/DooFon/public/api/device/";
     private SharedPreferences mPreferences;
 
     @Override
@@ -52,7 +53,7 @@ public class LogoActivity extends AppCompatActivity {
             if (mPreferences.contains("Serial")) {
                 String serial = mPreferences.getString("Serial", "");
                 //Set url & LoadJSON
-                urlApi.setUri(url, serial);
+                urlApi.setUri(URLDEVICE, serial);
                 new LoadJSON0().execute(urlApi.getUri());
             } else {
                 intentDelay();
@@ -70,43 +71,6 @@ public class LogoActivity extends AppCompatActivity {
         }
     }
 
-    /* // Read SerialNumber
-     private void readData() {
-         try {
-             FileInputStream fIn = openFileInput(FILENAME);
-             InputStreamReader reader = new InputStreamReader(fIn);
-
-             char[] buffer = new char[READ_BLOCK_SIZE];
-             String data = "";
-             int charReadCount;
-             while ((charReadCount = reader.read(buffer)) > 0) {
-                 String readString = String.copyValueOf(buffer, 0, charReadCount);
-                 data += readString;
-                 buffer = new char[READ_BLOCK_SIZE];
-             }
-             reader.close();
-             if (!(data.equals(""))) {
-                 //Set url & LoadJSON
-                 urlApi.setUri(url, data);
-                 new LoadJSON0().execute(urlApi.getUri());
-             } else {
-                 intentDelay();
-             }
-         } catch (Exception e) {
-             e.printStackTrace();
-             try {
-                 FileOutputStream fOut = openFileOutput(FILENAME, MODE_PRIVATE);
-                 OutputStreamWriter writer = new OutputStreamWriter(fOut);
-                 writer.write("");
-                 writer.flush();
-                 writer.close();
-             } catch (IOException ioe) {
-                 ioe.printStackTrace();
-             }
-             intentDelay();
-         }
-     }
- */
     //Delay to page ConnectDevice
     private void intentDelay() {
         Handler handler = new Handler();
