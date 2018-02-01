@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onRefresh() {
         // Connect loadJson choice 1 setTime
-        this.conLoadJSON(0);
+        this.conLoadJSON();
         Toast.makeText(this, "Refresh Weather", Toast.LENGTH_SHORT).show();
     }
 
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             dialog.setCancelable(true);
             dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    conLoadJSON(0);
+                    conLoadJSON();
                     Toast.makeText(MainActivity.this, "Refresh Weather", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -274,6 +274,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
+    }
+
+    private void conLoadJSON(){
+        this.conLoadJSON(0);
     }
 
     // Connect Load Json
