@@ -1,14 +1,13 @@
 package me.pr3a.localweather;
 
-//import android.content.Context;
-
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-//import android.net.ConnectivityManager;
+
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -38,6 +37,7 @@ import org.json.JSONObject;
 import me.itangqi.waveloadingview.WaveLoadingView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
+import me.pr3a.localweather.Helper.MyToolbar;
 import me.pr3a.localweather.Helper.UrlApi;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -54,7 +54,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private final MyToolbar myToolbar = new MyToolbar();
     private SharedPreferences mPreferences;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
 
     // Event onCreate
     @Override
@@ -62,12 +65,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d("APP", "OnCreate");
+
+        // Binding View
+        this.bindView();
+
         //set fond
         Typeface weatherFont = Typeface.createFromAsset(getAssets(), "fonts/weather.ttf");
-        weatherIcon = (TextView) findViewById(R.id.weather_icon);
         weatherIcon.setTypeface(weatherFont);
-        //Show Toolbar
-        this.showToolbar("DooFon", "");
+
+        // Display Toolbar
+        myToolbar.showToolbar("DooFon", "", toolbar);
+        setSupportActionBar(toolbar);
+
         //Show DrawerLayout and drawerToggle
         this.initInstances();
 
@@ -75,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.post(new Runnable() {
                                     @Override
@@ -137,9 +145,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        switch (id) {
+        switch (item.getItemId()) {
             case R.id.nav_main:
                 finish();
                 overridePendingTransition(0, 0);
@@ -187,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         Toast.makeText(MainActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
                         //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                        assert i != null;
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -242,6 +249,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(MainActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
                 //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                assert i != null;
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
                         | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -256,21 +264,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }).show();
     }
 
-    // Show Toolbar
-    private void showToolbar(String title, String subTitle) {
+    // Binding View
+    private void bindView() {
+        weatherIcon = (TextView) findViewById(R.id.weather_icon);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(title);
-        toolbar.setSubtitle(subTitle);
-        setSupportActionBar(toolbar);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
     }
 
     // Show DrawerLayout and drawerToggle
     private void initInstances() {
         // NavigationView
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         // DrawerLayout
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
@@ -326,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     // AsyncTask Load Data Weather
+    @SuppressLint("StaticFieldLeak")
     private class LoadJSON extends AsyncTask<String, Void, String> {
 
         private final TextView statusUpdate = (TextView) findViewById(R.id.textview_statusUpdate);

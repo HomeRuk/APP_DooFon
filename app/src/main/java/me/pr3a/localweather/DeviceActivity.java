@@ -33,6 +33,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
+import me.pr3a.localweather.Helper.MyToolbar;
 
 public class DeviceActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
 
@@ -40,14 +41,23 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     private SwipeRefreshLayout swipeRefreshLayout;
     private final UrlApi urlApi = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private final MyToolbar myToolbar = new MyToolbar();
     private SharedPreferences mPreferences;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
-        //Display Toolbar
-        this.showToolbar("My Device", "");
+
+        // Binding View
+        this.bindView();
+
+        // Display Toolbar
+        myToolbar.showToolbar("My Device", "", toolbar);
+        setSupportActionBar(toolbar);
+
         //Show DrawerLayout and drawerToggle
         this.initInstances();
 
@@ -55,7 +65,6 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.post(new Runnable() {
                                     @Override
@@ -83,9 +92,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        switch (id) {
+        switch (item.getItemId()) {
             case R.id.nav_main:
                 finish();
                 overridePendingTransition(0, 0);
@@ -135,6 +142,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                         Toast.makeText(DeviceActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
                         //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                        assert i != null;
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -192,6 +200,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
 
                 //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                assert i != null;
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
                         | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -206,20 +215,17 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         }).show();
     }
 
-    // Show Toolbar
-    private void showToolbar(String title, String subTitle) {
+    // Binding View
+    private void bindView() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(title);
-        toolbar.setSubtitle(subTitle);
-        setSupportActionBar(toolbar);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
     }
 
     // Show DrawerLayout and drawerToggle
     private void initInstances() {
-        // NavigationView
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
