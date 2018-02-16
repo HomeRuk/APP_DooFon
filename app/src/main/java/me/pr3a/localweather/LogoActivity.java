@@ -1,5 +1,6 @@
 package me.pr3a.localweather;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -72,7 +73,7 @@ public class LogoActivity extends AppCompatActivity {
         }
     }
 
-    //Delay to page ConnectDevice
+    // Delay to page ConnectDevice
     private void intentDelay() {
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -85,6 +86,7 @@ public class LogoActivity extends AppCompatActivity {
     }
 
     // AsyncTask Load Data Device
+    @SuppressLint("StaticFieldLeak")
     private class LoadJSON0 extends AsyncTask<String, Void, String> {
         // ProgressDialog
         private final ProgressDialog mProgressDialog;

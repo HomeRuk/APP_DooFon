@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 //import android.net.ConnectivityManager;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,8 +32,8 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Timer;
-import java.util.TimerTask;
+//import java.util.Timer;
+//import java.util.TimerTask;
 
 import me.itangqi.waveloadingview.WaveLoadingView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
@@ -79,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         swipeRefreshLayout.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        swipeRefreshLayout.setRefreshing(true);
                                         mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
                                         conLoadJSON(1);
                                         //updateToken
@@ -284,8 +284,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void conLoadJSON(int choice) {
         // Check Network Connected
         if (MyNetwork.isNetworkConnected(this)) {
-            // showing refresh animation before making http call
-            swipeRefreshLayout.setRefreshing(true);
             // ReadData Serialnumber
             this.getPreference();
             // choice 1 setTime
@@ -307,8 +305,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             dialog.showProblemDialog(this, "Problem", "Not Connected Network");
         }
-        // stopping swipe refresh
-        swipeRefreshLayout.setRefreshing(false);
     }
 
     // Read SerialNumber
@@ -368,6 +364,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            // showing refresh animation before making http call
+            swipeRefreshLayout.setRefreshing(true);
             mProgressDialog.show();
         }
 
@@ -460,7 +458,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 dialog.showProblemDialog(MainActivity.this, "Problem", "Program Stop");
                 e.printStackTrace();
             }
-            mProgressDialog.dismiss();
+            // stopping swipe refresh
+            swipeRefreshLayout.setRefreshing(false);
+            // * Wait 0.5 seconds to close ProgressDialog
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mProgressDialog.dismiss();
+                }
+            }, 500);
         }
     }
 }

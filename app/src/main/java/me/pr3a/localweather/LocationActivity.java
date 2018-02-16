@@ -1,5 +1,6 @@
 package me.pr3a.localweather;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -74,6 +75,8 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
     private SharedPreferences mPreferences;
+    // ProgressDialog
+    private ProgressDialog mProgressDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -378,12 +381,12 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
 
     // Start LocationService
     private void startLocation() {
-        Log.i("APP", "StartLocation failed");
+        Log.i("APP", "Start Location failed");
         if (SmartLocation.with(this).location().state().locationServicesEnabled()) {
             SmartLocation.with(this)
                     .location(new LocationGooglePlayServicesWithFallbackProvider(this))
                     .start(this);
-        } else Log.e("APP", "StartLocation failed");
+        } else Log.e("APP", "Start Location failed");
     }
 
     /*
@@ -433,33 +436,70 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     }
 
     // UPDATE Location to DB
+    @SuppressLint("StaticFieldLeak")
     private void saveLocation() {
         try {
-            RequestBody formBody = new FormBody.Builder()
-                    .add("SerialNumber", urlApi2.getApikey())
-                    .add("latitude", latitude + "")
-                    .add("longitude", longitude + "")
-                    .add("sid", sid)
-                    .build();
-            Request request = new Request.Builder()
-                    .url(urlApi2.getUrl())
-                    .post(formBody)
-                    .build();
-            OkHttpClient okHttpClient = new OkHttpClient();
-            okHttpClient.newCall(request).enqueue(new Callback() {
+            mProgressDialog = new ProgressDialog(LocationActivity.this);
+            mProgressDialog.setMessage("Saving ...");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+
+            new AsyncTask<Void, Void, Void>() {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    mProgressDialog.show();
+                }
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    Log.d("APP", "doInBackground");
+                    Log.i("APP", "Save latitude : " + latitude);
+                    Log.i("APP", "Save longitude : " + longitude);
+                    try {
+                        RequestBody formBody = new FormBody.Builder()
+                                .add("SerialNumber", urlApi2.getApikey())
+                                .add("latitude", latitude + "")
+                                .add("longitude", longitude + "")
+                                .add("sid", sid)
+                                .build();
+                        Request request = new Request.Builder()
+                                .url(urlApi2.getUrl())
+                                .post(formBody)
+                                .build();
+                        OkHttpClient okHttpClient = new OkHttpClient();
+                        okHttpClient.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                if (!response.isSuccessful()) {
+                                    throw new IOException("Unexpected code " + response);
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        dialog.showProblemDialog(LocationActivity.this, "Problem", "Save Fail");
+                    }
+                    return null;
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    if (!response.isSuccessful()) {
-                        throw new IOException("Unexpected code " + response);
-                    }
+                protected void onPostExecute(Void aVoid) {
+                    super.onPostExecute(aVoid);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mProgressDialog.dismiss();
+                        }
+                    }, 500);
                 }
-            });
-            Toast.makeText(LocationActivity.this, "Save Location", Toast.LENGTH_SHORT).show();
+            }.execute();
+            Toast.makeText(LocationActivity.this, "Save successfully!", Toast.LENGTH_SHORT).show();
             intentDelay();
         } catch (Exception e) {
             e.printStackTrace();
@@ -486,8 +526,6 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
 
     // AsyncTask Load Data Device
     private class LoadJsonLocation extends AsyncTask<String, Void, String> {
-        // ProgressDialog
-        private final ProgressDialog mProgressDialog;
 
         LoadJsonLocation(LocationActivity activity) {
             mProgressDialog = new ProgressDialog(activity);
@@ -522,21 +560,19 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String resultLocation) {
             Log.i("APP", "onPostExecute");
-            super.onPostExecute(result);
+            super.onPostExecute(resultLocation);
             try {
                 //Writer location
-                String location = result;
                 SharedPreferences.Editor editor = mPreferences.edit();
-                editor.putString("Location", location);
+                editor.putString("Location", resultLocation);
                 editor.apply();
                 setMap();
             } catch (Exception e) {
                 dialog.showConnectDialog(LocationActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
-            //Toast.makeText(LocationActivity.this, "Save successfully!", Toast.LENGTH_SHORT).show();
             mProgressDialog.dismiss();
         }
     }

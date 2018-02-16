@@ -12,9 +12,14 @@ public class MyAlertDialog {
     public static String titleDisconnect = "Sign Out";
     public static String messageDisconnect = "Do you want to Sign Out ?";
 
-    // ShowAlertConnectDialog
+    /**
+     * ShowAlertConnectDialog
+     *
+     * @param context
+     * @param title
+     * @param message
+     */
     public void showConnectDialog(Context context, String title, String message) {
-
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setTitle(title);
         dialog.setMessage(message);
@@ -27,7 +32,14 @@ public class MyAlertDialog {
         }).show();
     }
 
-    // ShowAlertProblemDialog
+
+    /**
+     * ShowAlertProblemDialog
+     *
+     * @param activity
+     * @param title
+     * @param message
+     */
     public void showProblemDialog(final Activity activity, String title, String message) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
         dialog.setTitle(title);

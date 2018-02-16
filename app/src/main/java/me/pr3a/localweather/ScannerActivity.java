@@ -1,5 +1,6 @@
 package me.pr3a.localweather;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -159,6 +160,7 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
     }
 
     // AsyncTask Load Data Device
+    @SuppressLint("StaticFieldLeak")
     private class LoadJsonDeviceScanner extends AsyncTask<String, Void, String> {
         // ProgressDialog
         private final ProgressDialog mProgressDialog;
@@ -218,7 +220,14 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
                 dialog.showConnectDialog(ScannerActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
-            mProgressDialog.dismiss();
+            // * Wait 0.5 seconds to close ProgressDialog
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mProgressDialog.dismiss();
+                }
+            }, 500);
         }
     }
 }

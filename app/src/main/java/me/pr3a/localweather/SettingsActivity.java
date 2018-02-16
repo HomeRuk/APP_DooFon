@@ -47,7 +47,8 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     private CircleProgressView mCircleView;
     private int valueInt = 0;
     private final String sid = "Ruk";
-
+    // ProgressDialog
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -228,6 +229,11 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
 
     // Button Save threshold
     public void onButtonSave(final View view) {
+        // ProgressDialog for save setting threshold
+        mProgressDialog = new ProgressDialog(SettingsActivity.this);
+        mProgressDialog.setMessage("Saving ...");
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgressDialog.setCancelable(false);
 
         AlertDialog.Builder dialogSave = new AlertDialog.Builder(this);
         dialogSave.setTitle("Save Threshold");
@@ -242,6 +248,11 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                     if (MyNetwork.isNetworkConnected(SettingsActivity.this)) {
                         view.setEnabled(false);
                         new AsyncTask<Void, Void, Void>() {
+                            @Override
+                            protected void onPreExecute() {
+                                super.onPreExecute();
+                                mProgressDialog.show();
+                            }
                             @Override
                             protected Void doInBackground(Void... voids) {
                                 Log.d("APP", "doInBackground");
@@ -262,6 +273,12 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                                     dialog.showProblemDialog(SettingsActivity.this, "Problem", "Save Fail");
                                 }
                                 return null;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
+                                super.onPostExecute(aVoid);
+                                mProgressDialog.dismiss();
                             }
                         }.execute();
                         //dialog.showConnectDialog(SettingsActivity.this, "Save", "Success");
@@ -368,8 +385,6 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
 
     // AsyncTask Load Data Device
     private class LoadJSONSetting extends AsyncTask<String, Void, String> {
-        // ProgressDialog
-        private final ProgressDialog mProgressDialog;
 
         LoadJSONSetting(SettingsActivity activity) {
             mProgressDialog = new ProgressDialog(activity);

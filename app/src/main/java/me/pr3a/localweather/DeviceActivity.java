@@ -1,11 +1,13 @@
 package me.pr3a.localweather;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -41,7 +43,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     private SharedPreferences mPreferences;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
         //Display Toolbar
@@ -49,22 +51,18 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         //Show DrawerLayout and drawerToggle
         this.initInstances();
 
-        /*SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy:MM:dd");
-        dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT+7"));
-        System.out.println(dateFormatGmt.format(new Date()) + "");*/
-
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
-        swipeRefreshLayout.setOnRefreshListener(this);
-
-        /*
+         /*
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        swipeRefreshLayout.setRefreshing(true);
+                                        // GET sharedPreference Serialnumber on activity create
                                         mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
+                                        // LoadJSON data device
                                         conLoadJSON();
                                     }
                                 }
@@ -76,7 +74,6 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
      */
     @Override
     public void onRefresh() {
-        // Connect loadJson choice 1 setTime
         this.conLoadJSON();
         Toast.makeText(this, "Refresh Detail Device", Toast.LENGTH_SHORT).show();
     }
@@ -232,8 +229,6 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     private void conLoadJSON() {
         // Check Network Connected
         if (MyNetwork.isNetworkConnected(this)) {
-            // showing refresh animation before making http call
-            swipeRefreshLayout.setRefreshing(true);
             //readData Serialnumber
             this.getPreference();
             //LoadJSON
@@ -241,8 +236,6 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         } else {
             dialog.showProblemDialog(this, "Problem", "Not Connected Network");
         }
-        // stopping swipe refresh
-        swipeRefreshLayout.setRefreshing(false);
     }
 
     // Read SerialNumber
@@ -263,6 +256,7 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
     }
 
     // AsyncTask Load Data Device
+    @SuppressLint("StaticFieldLeak")
     private class LoadJSON2 extends AsyncTask<String, Void, String> {
 
         private final TextView deviceSerialNumber = (TextView) findViewById(R.id.txt_SerialNumber);
@@ -284,6 +278,8 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            // showing refresh animation before making http call
+            swipeRefreshLayout.setRefreshing(true);
             mProgressDialog.show();
         }
 
@@ -332,7 +328,18 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
                 dialog.showProblemDialog(DeviceActivity.this, "Problem", "Read Data fail");
                 e.printStackTrace();
             }
+            // stopping swipe refresh
+            swipeRefreshLayout.setRefreshing(false);
             mProgressDialog.dismiss();
+
+            // * Wait 0.5 seconds to close progressdialog
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mProgressDialog.dismiss();
+                }
+            }, 500);
         }
     }
 

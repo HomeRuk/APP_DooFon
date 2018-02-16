@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 //import android.support.v4.app.ActivityCompat;
 //import android.support.v4.content.ContextCompat;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -138,7 +139,13 @@ public class ConnectDeviceActivity extends AppCompatActivity {
                 dialog.showConnectDialog(ConnectDeviceActivity.this, "Connect", "Connection failed");
                 e.printStackTrace();
             }
-            mProgressDialog.dismiss();
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mProgressDialog.dismiss();
+                }
+            }, 300);
         }
     }
 }
