@@ -1,11 +1,13 @@
 package me.pr3a.localweather;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+@SuppressLint("Registered")
 public class BaseScannerActivity extends AppCompatActivity {
     public void setupToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

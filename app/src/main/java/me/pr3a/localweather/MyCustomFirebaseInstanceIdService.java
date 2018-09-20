@@ -6,6 +6,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import me.pr3a.localweather.Helper.UrlApi;
 import okhttp3.Call;
@@ -40,6 +41,11 @@ public class MyCustomFirebaseInstanceIdService extends FirebaseInstanceIdService
         Log.d("updateToken", "=" + token);
         urlApi2.setUri(URLFCMTOKEN, apiKey);
         try {
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
             RequestBody formBody = new FormBody.Builder()
                     .add("SerialNumber", apiKey + "")
                     .add("FCMtoken", token + "")
@@ -49,7 +55,6 @@ public class MyCustomFirebaseInstanceIdService extends FirebaseInstanceIdService
                     .url(urlApi2.getUrl())
                     .post(formBody)
                     .build();
-            OkHttpClient okHttpClient = new OkHttpClient();
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {

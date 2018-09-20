@@ -12,7 +12,7 @@ public class MyNetwork {
     public final static String URLLOCATION = "http://192.168.44.51/DooFon/public/api/device/update/location";
     public final static String URLFCMTOKEN = "http://192.168.44.51/DooFon/public/api/device/update/FCMtoken";
     public final static String URLTHRESHOLD = "http://192.168.44.51/DooFon/public/api/device/update/threshold";
-
+    public final static String SID = "Ruk";
     /**
      * Checks if the device is connected to the network.
      *

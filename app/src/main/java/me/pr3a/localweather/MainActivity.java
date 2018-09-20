@@ -34,6 +34,8 @@ import org.json.JSONObject;
 //import java.util.Timer;
 //import java.util.TimerTask;
 
+import java.util.concurrent.TimeUnit;
+
 import me.itangqi.waveloadingview.WaveLoadingView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
@@ -69,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Binding View
         this.bindView();
 
-        //set fond
+        // set fond
         Typeface weatherFont = Typeface.createFromAsset(getAssets(), "fonts/weather.ttf");
         weatherIcon.setTypeface(weatherFont);
 
@@ -374,7 +376,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         protected String doInBackground(String... urls) {
             Log.d("APP", "doInBackground");
-            OkHttpClient okHttpClient = new OkHttpClient();
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(urls[0]).build();
             try {

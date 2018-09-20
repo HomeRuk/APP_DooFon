@@ -27,6 +27,7 @@ import io.nlopez.smartlocation.SmartLocation;
 import io.nlopez.smartlocation.location.providers.LocationGooglePlayServicesWithFallbackProvider;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
+import me.pr3a.localweather.Helper.MyToolbar;
 import me.pr3a.localweather.Helper.UrlApi;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -57,6 +58,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
 import static me.pr3a.localweather.Helper.MyNetwork.URLLOCATION;
@@ -74,18 +76,28 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private final MyToolbar myToolbar = new MyToolbar();
     private SharedPreferences mPreferences;
     // ProgressDialog
     private ProgressDialog mProgressDialog;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
-        //Display Toolbar
-        this.showToolbar("Setting", "Device Location");
+
+        // Binding View
+        this.bindView();
+
+        // Display Toolbar
+        myToolbar.showToolbar("Setting", "Device Location", toolbar);
+        setSupportActionBar(toolbar);
+
         //Show DrawerLayout and drawerToggle
         this.initInstances();
+
         mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
 
         if (MyNetwork.isNetworkConnected(this)) {
@@ -93,7 +105,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             this.getPreference();
             //Load SerialNumber
             new LoadJsonLocation(LocationActivity.this).execute(urlApi1.getUri());
-            //read location
+            //Read location
             try {
                 if (mPreferences.contains("Location")) {
                     String location = mPreferences.getString("Location", "");
@@ -289,6 +301,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                         Toast.makeText(LocationActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
                         //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                        assert i != null;
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -345,6 +358,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                 Toast.makeText(LocationActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
                 //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                assert i != null;
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
                         | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -396,20 +410,17 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     }
     */
 
-    // Show Toolbar
-    private void showToolbar(String title, String subTitle) {
+    // Binding View
+    private void bindView() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(title);
-        toolbar.setSubtitle(subTitle);
-        setSupportActionBar(toolbar);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
     }
 
     // Show DrawerLayout and drawerToggle
     private void initInstances() {
         // NavigationView
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
@@ -437,28 +448,43 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
             mProgressDialog.setCancelable(false);
 
             new AsyncTask<Void, Void, Void>() {
+                boolean statusSave = false;
+
                 @Override
                 protected void onPreExecute() {
                     super.onPreExecute();
                     mProgressDialog.show();
                 }
+
                 @Override
                 protected Void doInBackground(Void... voids) {
                     Log.d("APP", "doInBackground");
                     Log.i("APP", "Save latitude : " + latitude);
                     Log.i("APP", "Save longitude : " + longitude);
-                    try {
-                        RequestBody formBody = new FormBody.Builder()
-                                .add("SerialNumber", urlApi2.getApikey())
-                                .add("latitude", latitude + "")
-                                .add("longitude", longitude + "")
-                                .add("sid", sid)
-                                .build();
-                        Request request = new Request.Builder()
-                                .url(urlApi2.getUrl())
-                                .post(formBody)
-                                .build();
-                        OkHttpClient okHttpClient = new OkHttpClient();
+
+                    OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                            .connectTimeout(10, TimeUnit.SECONDS)
+                            .writeTimeout(10, TimeUnit.SECONDS)
+                            .readTimeout(30, TimeUnit.SECONDS)
+                            .build();
+                    RequestBody formBody = new FormBody.Builder()
+                            .add("SerialNumber", urlApi2.getApikey())
+                            .add("latitude", latitude + "")
+                            .add("longitude", longitude + "")
+                            .add("sid", sid)
+                            .build();
+                    Request request = new Request.Builder()
+                            .url(urlApi2.getUrl())
+                            .post(formBody)
+                            .build();
+                    try (Response response = okHttpClient.newCall(request).execute()) {
+                        statusSave = response.isSuccessful();
+                        Log.d("APP", "Response completed: " + response);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.d("APP", "Save Fail");
+                    }
+                        /*
                         okHttpClient.newCall(request).enqueue(new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
@@ -472,10 +498,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                                 }
                             }
                         });
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        dialog.showProblemDialog(LocationActivity.this, "Problem", "Save Fail");
-                    }
+                        */
                     return null;
                 }
 
@@ -487,12 +510,16 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
                         @Override
                         public void run() {
                             mProgressDialog.dismiss();
+                            if (statusSave) {
+                                Toast.makeText(LocationActivity.this, "Save completed", Toast.LENGTH_SHORT).show();
+                            } else {
+                                dialog.showProblemDialog(LocationActivity.this, "Problem", "Save Fail");
+                            }
+                            intentDelay();
                         }
                     }, 500);
                 }
             }.execute();
-            Toast.makeText(LocationActivity.this, "Save successfully!", Toast.LENGTH_SHORT).show();
-            intentDelay();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -517,6 +544,7 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
     }
 
     // AsyncTask Load Data Device
+    @SuppressLint("StaticFieldLeak")
     private class LoadJsonLocation extends AsyncTask<String, Void, String> {
 
         LoadJsonLocation(LocationActivity activity) {
@@ -535,7 +563,11 @@ public class LocationActivity extends AppCompatActivity implements OnLocationUpd
         @Override
         protected String doInBackground(String... urls) {
             Log.i("APP", "doInBackground");
-            OkHttpClient okHttpClient = new OkHttpClient();
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(urls[0]).build();
             try {

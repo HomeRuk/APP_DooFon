@@ -25,6 +25,8 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.util.concurrent.TimeUnit;
+
 import me.pr3a.localweather.Helper.MyNetwork;
 import me.pr3a.localweather.Helper.UrlApi;
 import me.pr3a.localweather.Helper.MyAlertDialog;
@@ -283,7 +285,11 @@ public class DeviceActivity extends AppCompatActivity implements NavigationView.
 
         @Override
         protected String doInBackground(String... urls) {
-            OkHttpClient okHttpClient = new OkHttpClient();
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(urls[0]).build();
             try {

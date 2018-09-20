@@ -21,6 +21,8 @@ import com.google.zxing.Result;
 
 import org.json.JSONObject;
 
+import java.util.concurrent.TimeUnit;
+
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.UrlApi;
@@ -181,7 +183,11 @@ public class ScannerActivity extends BaseScannerActivity implements ZXingScanner
         @Override
         protected String doInBackground(String... urls) {
             Log.d("APP", "doInBackground");
-            OkHttpClient okHttpClient = new OkHttpClient();
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(urls[0]).build();
             try {

@@ -1,11 +1,13 @@
 package me.pr3a.localweather;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -23,9 +25,12 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.util.concurrent.TimeUnit;
+
 import at.grabner.circleprogress.CircleProgressView;
 import me.pr3a.localweather.Helper.MyAlertDialog;
 import me.pr3a.localweather.Helper.MyNetwork;
+import me.pr3a.localweather.Helper.MyToolbar;
 import me.pr3a.localweather.Helper.UrlApi;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -35,6 +40,7 @@ import okhttp3.Response;
 
 import static me.pr3a.localweather.Helper.MyNetwork.URLDEVICE;
 import static me.pr3a.localweather.Helper.MyNetwork.URLTHRESHOLD;
+import static me.pr3a.localweather.Helper.MyNetwork.SID;
 
 public class SettingsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -42,26 +48,34 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     private final UrlApi urlApi1 = new UrlApi();
     private final UrlApi urlApi2 = new UrlApi();
     private final MyAlertDialog dialog = new MyAlertDialog();
+    private final MyToolbar myToolbar = new MyToolbar();
     private SharedPreferences mPreferences;
     private TextView txtValue;
     private CircleProgressView mCircleView;
     private int valueInt = 0;
-    private final String sid = "Ruk";
     // ProgressDialog
     private ProgressDialog mProgressDialog;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        //Display Toolbar
-        this.showToolbar("Setting", "Predict Threshold");
-        //Show DrawerLayout and drawerToggle
+
+        // Binding View
+        this.bindView();
+
+        // Display Toolbar
+        myToolbar.showToolbar("Setting", "Predict Threshold", toolbar);
+        setSupportActionBar(toolbar);
+
+        // Show DrawerLayout and drawerToggle
         this.initInstances();
 
         txtValue = (TextView) findViewById(R.id.textView_seekBar);
 
-        //Read Serialnumber & setUrl
+        // Read Serialnumber & setUrl
         mPreferences = getSharedPreferences("Serialnumber", MODE_PRIVATE);
         conLoadJSON();
 
@@ -149,6 +163,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                         Toast.makeText(SettingsActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
                         //Restart APP
                         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                        assert i != null;
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -205,6 +220,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                 Toast.makeText(SettingsActivity.this, "Disconnect Device", Toast.LENGTH_SHORT).show();
                 //Restart APP
                 Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                assert i != null;
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK
                         | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -220,7 +236,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     }
 
     // Button Save threshold
-    public void onButtonSave(final View view) {
+    public void onButtonSave(final View view) throws Exception {
         // ProgressDialog for save setting threshold
         mProgressDialog = new ProgressDialog(SettingsActivity.this);
         mProgressDialog.setMessage("Saving ...");
@@ -233,36 +249,45 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
         dialogSave.setIcon(R.drawable.ic_done_blue24dp);
         dialogSave.setCancelable(true);
         dialogSave.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @SuppressLint("StaticFieldLeak")
             public void onClick(DialogInterface dialogSave, int which) {
                 //Check serial is not empty
                 if (valueInt != 0) {
                     //Check Connect network
                     if (MyNetwork.isNetworkConnected(SettingsActivity.this)) {
-                        view.setEnabled(false);
                         new AsyncTask<Void, Void, Void>() {
+                            boolean statusSave = false;
                             @Override
                             protected void onPreExecute() {
                                 super.onPreExecute();
+                                Log.d("APP", "Save setting onPreExecute");
+                                view.setEnabled(false);
                                 mProgressDialog.show();
                             }
+
                             @Override
                             protected Void doInBackground(Void... voids) {
-                                Log.d("APP", "doInBackground");
-                                try {
-                                    RequestBody formBody = new FormBody.Builder()
-                                            .add("SerialNumber", urlApi2.getApikey())
-                                            .add("threshold", valueInt + "")
-                                            .add("sid", sid)
-                                            .build();
-                                    Request request = new Request.Builder()
-                                            .url(urlApi2.getUrl())
-                                            .post(formBody)
-                                            .build();
-                                    OkHttpClient okHttpClient = new OkHttpClient();
-                                    okHttpClient.newCall(request).execute();
+                                Log.d("APP", "Save setting doInBackground");
+                                OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                                        .connectTimeout(10, TimeUnit.SECONDS)
+                                        .writeTimeout(10, TimeUnit.SECONDS)
+                                        .readTimeout(30, TimeUnit.SECONDS)
+                                        .build();
+                                RequestBody formBody = new FormBody.Builder()
+                                        .add("SerialNumber", urlApi2.getApikey())
+                                        .add("threshold", valueInt + "")
+                                        .add("sid", SID)
+                                        .build();
+                                Request request = new Request.Builder()
+                                        .url(urlApi2.getUrl())
+                                        .post(formBody)
+                                        .build();
+                                try (Response response = okHttpClient.newCall(request).execute()) {
+                                    statusSave = response.isSuccessful();
+                                    Log.d("APP", "Response completed: " + response);
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    dialog.showProblemDialog(SettingsActivity.this, "Problem", "Save Fail");
+                                    Log.d("APP", "Save Fail");
                                 }
                                 return null;
                             }
@@ -270,11 +295,16 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                             @Override
                             protected void onPostExecute(Void aVoid) {
                                 super.onPostExecute(aVoid);
+                                Log.d("APP", "Save setting onPostExecute");
+                                if(statusSave) {
+                                    Toast.makeText(SettingsActivity.this, "Save completed", Toast.LENGTH_SHORT).show();
+                                }else {
+                                    dialog.showProblemDialog(SettingsActivity.this, "Problem", "Save Fail");
+                                }
                                 mProgressDialog.dismiss();
+                                view.setEnabled(true);
                             }
                         }.execute();
-                        //dialog.showConnectDialog(SettingsActivity.this, "Save", "Success");
-                        view.setEnabled(true);
                     } else {
                         dialog.showProblemDialog(SettingsActivity.this, "Problem", "Not Connected Network");
                     }
@@ -288,58 +318,34 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                 dialog.dismiss();
             }
         }).show();
-
     }
 
     // mCircleView
     private void onCircleView() {
         mCircleView = (CircleProgressView) findViewById(R.id.circleView);
         mCircleView.setOnProgressChangedListener(new CircleProgressView.OnProgressChangedListener() {
+            @SuppressLint("DefaultLocale")
             @Override
             public void onProgressChanged(float value) {
                 valueInt = Math.round(value);
-                txtValue.setText("Threshold : " + valueInt + " %");
+                txtValue.setText(String.format("Threshold : %d %%", valueInt));
                 //seekBar.setProgress(valueInt);
             }
         });
     }
 
-    /*
-        // SeekBar
-        private void onSeekBar() {
-            seekBar = (SeekBar) findViewById(R.id.seek_Bar);
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    progressChanged = progress;
-                    txtSeekBar.setText("Threshold : " + progressChanged + "%");
-                    mCircleView.setValueAnimated(progressChanged, 1500);
-                }
-
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                    // TODO Auto-generated method stub
-                }
-
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                    mCircleView.setValueAnimated(seekBar.getProgress(), 15);
-                    Toast.makeText(SettingsActivity.this, "Threshold : " + progressChanged + "%", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    */
-    // Show Toolbar
-    private void showToolbar(String title, String subTitle) {
+    // Binding View
+    private void bindView() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(title);
-        toolbar.setSubtitle(subTitle);
-        setSupportActionBar(toolbar);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
     }
 
     // Show DrawerLayout and drawerToggle
     private void initInstances() {
         // NavigationView
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        // DrawerLayout
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
@@ -349,7 +355,7 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     private void conLoadJSON() {
         // Check Network Connected
         if (MyNetwork.isNetworkConnected(this)) {
-            //readData Serialnumber
+            // readData Serialnumber
             this.getPreference();
             new LoadJSONSetting(SettingsActivity.this).execute(urlApi1.getUri());
         } else {
@@ -376,7 +382,10 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
     }
 
     // AsyncTask Load Data Device
+    @SuppressLint("StaticFieldLeak")
     private class LoadJSONSetting extends AsyncTask<String, Void, String> {
+
+        private ProgressDialog mProgressDialog;
 
         LoadJSONSetting(SettingsActivity activity) {
             mProgressDialog = new ProgressDialog(activity);
@@ -393,7 +402,11 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
 
         @Override
         protected String doInBackground(String... urls) {
-            OkHttpClient okHttpClient = new OkHttpClient();
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(urls[0]).build();
             try {
@@ -417,7 +430,6 @@ public class SettingsActivity extends AppCompatActivity implements NavigationVie
                 JSONObject json = new JSONObject(result);
                 String threshold = String.format("%s", json.getString("threshold"));
                 txtValue.setText(String.format("Threshold : %s %%", threshold));
-                //seekBar.setProgress(Integer.parseInt(threshold));
                 mCircleView.setValueAnimated(Integer.parseInt(threshold), 1500);
             } catch (Exception e) {
                 dialog.showProblemDialog(SettingsActivity.this, "Problem", "Not Connected Internet");
